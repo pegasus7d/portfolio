@@ -24,43 +24,51 @@ const SOCIAL_LINKS: { label: string; href: string; icon: ComponentType<SVGProps<
 export default function Footer() {
   return (
     <footer className="relative bg-[var(--bg)]">
-      {/* Glow bleed from Contact section */}
+      {/* Wide diffused glow bleed — extends well above footer */}
       <div
-        className="pointer-events-none absolute inset-x-0 -top-16 h-24"
+        className="pointer-events-none absolute inset-x-0 -top-28 h-40"
         aria-hidden="true"
         style={{
-          background: "radial-gradient(ellipse 50% 100% at 50% 0%, rgba(59,130,246,0.04) 0%, transparent 80%)",
+          background: "radial-gradient(ellipse 70% 100% at 50% 100%, rgba(59,130,246,0.025) 0%, transparent 70%)",
         }}
       />
 
-      {/* Gradient top border */}
+      {/* Soft gradient fade — removes hard boundary */}
       <div
-        className="absolute inset-x-0 top-0 h-px"
+        className="pointer-events-none absolute inset-x-0 -top-12 h-16"
         aria-hidden="true"
         style={{
-          background: "linear-gradient(90deg, transparent 10%, rgba(59,130,246,0.18) 40%, rgba(167,139,250,0.12) 60%, transparent 90%)",
+          background: "linear-gradient(to bottom, transparent, var(--bg))",
+        }}
+      />
+
+      {/* Barely visible gradient line */}
+      <div
+        className="absolute inset-x-0 top-0 h-px opacity-40"
+        aria-hidden="true"
+        style={{
+          background: "linear-gradient(90deg, transparent 20%, rgba(59,130,246,0.12) 40%, rgba(167,139,250,0.08) 60%, transparent 80%)",
+          filter: "blur(0.5px)",
         }}
       />
 
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-5 px-6 py-10 sm:flex-row sm:justify-between">
-        {/* Logo / copyright */}
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="group text-sm font-semibold text-[var(--text-primary)] transition-all duration-300 hover:text-[var(--accent)]"
+            className="group text-sm font-semibold text-[var(--text-muted)] transition-all duration-300 hover:text-[var(--text-primary)]"
           >
-            <span className="inline-block transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.35)] group-hover:scale-105">
+            <span className="inline-block transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.25)] group-hover:scale-105">
               DB
             </span>
           </Link>
-          <span className="text-xs text-[var(--border)]">/</span>
-          <p className="text-xs text-[var(--text-muted)]">
+          <span className="text-[10px] text-[rgba(42,42,42,0.8)]">/</span>
+          <p className="text-xs text-[var(--text-muted)]/60">
             &copy; {new Date().getFullYear()} Debayan Biswas
           </p>
         </div>
 
-        {/* Social links */}
-        <ul className="flex items-center gap-1">
+        <ul className="flex items-center gap-0.5">
           {SOCIAL_LINKS.map((link) => {
             const Icon = link.icon;
             return (
@@ -70,11 +78,11 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
-                  className="group flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text-muted)] transition-all duration-300 hover:-translate-y-px hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
+                  className="group flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text-muted)]/70 transition-all duration-300 hover:-translate-y-px hover:text-[var(--text-primary)] hover:bg-[rgba(30,30,30,0.4)]"
                 >
                   <Icon
-                    size={15}
-                    className="transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.3)]"
+                    size={14}
+                    className="transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.25)]"
                   />
                   <span className="hidden text-xs transition-colors duration-300 group-hover:text-[var(--text-primary)] sm:inline">
                     {link.label}
