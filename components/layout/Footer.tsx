@@ -58,8 +58,8 @@ export default function Footer() {
             href="/"
             className="group text-sm font-semibold text-[var(--text-muted)] transition-all duration-300 hover:text-[var(--text-primary)]"
           >
-            <span className="inline-block transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.25)] group-hover:scale-105">
-              DB
+            <span className="inline-block bg-gradient-to-r from-[#f4f4f8] to-[#a5b4fc] bg-clip-text text-sm font-semibold text-transparent transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(129,140,248,0.35)] group-hover:scale-[1.02]">
+              Debayan.dev
             </span>
           </Link>
           <span className="text-[10px] text-[rgba(42,42,42,0.8)]">/</span>
