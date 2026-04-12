@@ -9,6 +9,7 @@ export interface ScrollTriggerOptions {
   to?: gsap.TweenVars;
   trigger?: ScrollTrigger.Vars;
   stagger?: number;
+  /** @deprecated No longer used — children are always the animation target */
   children?: boolean;
 }
 
@@ -27,10 +28,10 @@ const DEFAULT_TO: gsap.TweenVars = {
 };
 
 /**
- * Attaches a GSAP ScrollTrigger animation to the given ref.
+ * Attaches a GSAP ScrollTrigger animation to direct children of the ref.
  *
- * If `options.children` is true, animates direct children with stagger
- * instead of the container itself.
+ * The container itself stays fully visible and occupies layout space,
+ * which keeps anchor-link scrolling (#contact, #about, etc.) working.
  */
 export function useScrollTrigger<T extends HTMLElement>(
   options: ScrollTriggerOptions = {}
@@ -42,7 +43,7 @@ export function useScrollTrigger<T extends HTMLElement>(
     if (reduced || !ref.current) return;
 
     const el = ref.current;
-    const targets = options.children ? el.children : el;
+    const targets = el.children;
 
     const fromVars = { ...DEFAULT_FROM, ...options.from };
     const toVars: gsap.TweenVars = {
@@ -51,7 +52,7 @@ export function useScrollTrigger<T extends HTMLElement>(
       stagger: options.stagger ?? DEFAULTS.stagger,
       scrollTrigger: {
         trigger: el,
-        start: "top 85%",
+        start: "top 90%",
         end: "bottom 20%",
         toggleActions: "play none none none",
         once: true,
@@ -68,7 +69,7 @@ export function useScrollTrigger<T extends HTMLElement>(
         .filter((st) => st.trigger === el)
         .forEach((st) => st.kill());
     };
-  }, [reduced, options.children, options.stagger]);
+  }, [reduced, options.stagger]);
 
   return ref;
 }

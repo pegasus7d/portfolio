@@ -4,7 +4,6 @@ import { useRef, useLayoutEffect } from "react";
 import { Mail } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/icons";
 import { SectionWrapper } from "@/components/layout";
-import { Textify } from "@/components/textify";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { ComponentType, SVGProps } from "react";
@@ -31,46 +30,35 @@ const LINKS: ContactLink[] = [
   },
   {
     label: "GitHub",
-    href: "https://github.com/debayan",
-    display: "github.com/debayan",
+    href: "https://github.com/pegasus7d",
+    display: "github.com/pegasus7d",
     icon: GithubIcon,
   },
 ];
 
 export default function Contact() {
-  const linksRef = useRef<HTMLDivElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const sectionInnerRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
   useLayoutEffect(() => {
-    if (reduced || !linksRef.current) return;
+    if (reduced || !sectionInnerRef.current) return;
 
-    const links = linksRef.current.querySelectorAll("[data-contact-link]");
-    gsap.set(links, { opacity: 0, y: 15 });
+    const heading = sectionInnerRef.current.querySelector("[data-contact-heading]");
+    const subtitle = sectionInnerRef.current.querySelector("[data-contact-subtitle]");
+    const divider = sectionInnerRef.current.querySelector("[data-contact-divider]");
+    const links = sectionInnerRef.current.querySelectorAll("[data-contact-link]");
 
-    if (subtitleRef.current) {
-      gsap.set(subtitleRef.current, { opacity: 0, y: 10 });
-      gsap.to(subtitleRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.5,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: subtitleRef.current,
-          start: "top 85%",
-          once: true,
-        },
-      });
-    }
+    const all = [heading, subtitle, divider, ...Array.from(links)].filter(Boolean);
+    gsap.set(all, { opacity: 0, y: 20 });
 
-    const tween = gsap.to(links, {
+    const tween = gsap.to(all, {
       opacity: 1,
       y: 0,
-      duration: 0.5,
-      stagger: 0.1,
+      duration: 0.6,
+      stagger: 0.08,
       ease: "power3.out",
       scrollTrigger: {
-        trigger: linksRef.current,
+        trigger: sectionInnerRef.current,
         start: "top 85%",
         once: true,
       },
@@ -79,31 +67,48 @@ export default function Contact() {
     return () => {
       tween.kill();
       ScrollTrigger.getAll()
-        .filter((st) => st.trigger === linksRef.current || st.trigger === subtitleRef.current)
+        .filter((st) => st.trigger === sectionInnerRef.current)
         .forEach((st) => st.kill());
     };
   }, [reduced]);
 
   return (
     <SectionWrapper id="contact">
-      <div className="text-center">
-        <Textify
-          variant="highlight"
-          content="Get in touch"
-          tag="h2"
-          className="inline-block text-3xl font-bold tracking-tight sm:text-4xl"
-          trigger="scroll"
-          highlightColor="var(--accent)"
-          duration={0.8}
+      <div ref={sectionInnerRef} className="relative text-center">
+        {/* Radial glow behind heading */}
+        <div
+          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 w-[480px] h-[280px]"
+          aria-hidden="true"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, rgba(167,139,250,0.04) 40%, transparent 70%)",
+          }}
         />
-        <p ref={subtitleRef} className="mt-4 text-[var(--text-muted)]">
+
+        <h2
+          data-contact-heading
+          className="relative inline-block text-3xl font-bold tracking-tight sm:text-4xl bg-gradient-to-r from-[var(--text-primary)] via-[var(--accent)] to-[#a78bfa] bg-clip-text text-transparent"
+        >
+          Get in touch
+        </h2>
+
+        <p
+          data-contact-subtitle
+          className="mt-4 text-[var(--text-muted)]"
+        >
           Open to backend, systems, and infrastructure roles. Let&apos;s talk.
         </p>
 
+        {/* Gradient divider */}
         <div
-          ref={linksRef}
-          className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6"
-        >
+          data-contact-divider
+          className="mx-auto mt-8 h-px w-48"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.3), rgba(167,139,250,0.2), transparent)",
+          }}
+        />
+
+        {/* Contact links */}
+        <div className="mt-8 flex flex-col items-center gap-2">
           {LINKS.map((link) => {
             const Icon = link.icon;
             return (
@@ -113,20 +118,31 @@ export default function Contact() {
                 data-contact-link
                 target={link.href.startsWith("mailto") ? undefined : "_blank"}
                 rel={link.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
-                className="group flex items-center gap-3 rounded-lg border border-transparent px-5 py-3 text-sm transition-all duration-300 hover:border-[var(--border)] hover:bg-[var(--surface)] hover:shadow-[0_0_20px_rgba(59,130,246,0.08)]"
+                className="group relative flex w-full max-w-md items-center gap-4 rounded-xl border border-transparent px-6 py-4 text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border)] hover:bg-[var(--surface)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.06)]"
               >
-                <Icon
-                  size={18}
-                  className="shrink-0 text-[var(--text-muted)] transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.4)]"
-                />
-                <span className="font-medium text-[var(--text-primary)] transition-colors duration-300 group-hover:text-[var(--accent)]">
-                  {link.label}
+                {/* Icon */}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 group-hover:border-[var(--accent)]/30 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.12)]">
+                  <Icon
+                    size={16}
+                    className="text-[var(--text-muted)] transition-all duration-300 group-hover:text-[var(--accent)] group-hover:brightness-125"
+                  />
                 </span>
-                <span className="hidden text-[var(--text-muted)] transition-colors duration-300 group-hover:text-[var(--accent)] sm:inline">
-                  &middot;
-                </span>
-                <span className="hidden text-[var(--text-muted)] underline underline-offset-4 decoration-[var(--border)] transition-all duration-300 group-hover:text-[var(--text-primary)] group-hover:decoration-[var(--accent)] sm:inline">
-                  {link.display}
+
+                {/* Text */}
+                <div className="flex flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+                  <span className="font-medium text-[var(--text-primary)] transition-colors duration-300 group-hover:text-[var(--accent)]">
+                    {link.label}
+                  </span>
+                  <span className="relative text-xs text-[var(--text-muted)] transition-colors duration-300 group-hover:text-[var(--text-primary)] sm:text-sm">
+                    {link.display}
+                    {/* Animated underline */}
+                    <span className="absolute bottom-0 left-0 h-px w-0 bg-[var(--accent)] transition-all duration-300 group-hover:w-full" />
+                  </span>
+                </div>
+
+                {/* Arrow */}
+                <span className="ml-auto text-[var(--text-muted)] opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0.5" aria-hidden="true">
+                  &rarr;
                 </span>
               </a>
             );

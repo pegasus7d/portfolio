@@ -11,7 +11,7 @@ const SOCIAL_LINKS: { label: string; href: string; icon: ComponentType<SVGProps<
   },
   {
     label: "GitHub",
-    href: "https://github.com/debayan",
+    href: "https://github.com/pegasus7d",
     icon: GithubIcon,
   },
   {
@@ -23,12 +23,30 @@ const SOCIAL_LINKS: { label: string; href: string; icon: ComponentType<SVGProps<
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--bg)]">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-8 sm:flex-row sm:justify-between">
-        <p className="text-sm text-[var(--text-muted)]">
-          &copy; {new Date().getFullYear()} Debayan Biswas
-        </p>
-        <ul className="flex items-center gap-5">
+    <footer className="relative border-t border-[var(--border)] bg-[var(--bg)]">
+      {/* Gradient glow top border */}
+      <div
+        className="absolute inset-x-0 top-0 h-px"
+        aria-hidden="true"
+        style={{
+          background: "linear-gradient(90deg, transparent 10%, rgba(59,130,246,0.2) 40%, rgba(167,139,250,0.15) 60%, transparent 90%)",
+        }}
+      />
+
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-5 px-6 py-10 sm:flex-row sm:justify-between">
+        {/* Logo / copyright */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-[var(--text-primary)] transition-all duration-300 hover:text-[var(--accent)] hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.3)]">
+            DB
+          </span>
+          <span className="text-xs text-[var(--border)]">/</span>
+          <p className="text-xs text-[var(--text-muted)]">
+            &copy; {new Date().getFullYear()} Debayan Biswas
+          </p>
+        </div>
+
+        {/* Social links */}
+        <ul className="flex items-center gap-1">
           {SOCIAL_LINKS.map((link) => {
             const Icon = link.icon;
             return (
@@ -38,13 +56,13 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
-                  className="group flex items-center gap-2 text-sm text-[var(--text-muted)] transition-all duration-300 hover:text-[var(--text-primary)]"
+                  className="group flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[var(--text-muted)] transition-all duration-300 hover:-translate-y-px hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
                 >
                   <Icon
-                    size={16}
-                    className="transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.35)]"
+                    size={15}
+                    className="transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.3)]"
                   />
-                  <span className="hidden sm:inline">{link.label}</span>
+                  <span className="hidden text-xs sm:inline">{link.label}</span>
                 </Link>
               </li>
             );
