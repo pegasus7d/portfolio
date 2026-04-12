@@ -52,7 +52,7 @@ const BADGE_META: Record<BadgeKind, { label: string; icon: string; color: string
 
 function GraphSkeleton() {
   return (
-    <div className="flex min-h-[480px] lg:min-h-[600px] items-center justify-center">
+    <div className="flex aspect-[10/7] max-h-[min(380px,85vw)] w-full items-center justify-center sm:max-h-[440px] lg:aspect-auto lg:min-h-[min(640px,76vh)] lg:max-h-none">
       <div className="flex flex-col items-center gap-3">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
         <p className="text-xs text-[var(--text-muted)]">Loading graph&hellip;</p>
@@ -70,23 +70,38 @@ interface NarrativePanelProps {
 
 function NarrativePanel({ node, compact }: NarrativePanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const prevId = useRef<string | null>(null);
+  const prevKey = useRef<string | null>(null);
+  /** Stable across parent re-renders so we do not re-run fade on the same selection (mobile was getting opacity stuck at 0 when rAF was cancelled). */
+  const narrativeKey = node?.id ?? "__default__";
 
   useEffect(() => {
-    if (!panelRef.current) return;
-    const id = node?.id ?? null;
-    if (id === prevId.current) return;
-    prevId.current = id;
     const el = panelRef.current;
+    if (!el) return;
+
+    if (narrativeKey === prevKey.current) {
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
+      return;
+    }
+    prevKey.current = narrativeKey;
+
     el.style.opacity = "0";
     el.style.transform = "translateY(6px)";
     const raf = requestAnimationFrame(() => {
-      el.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+      if (panelRef.current !== el) return;
+      el.style.transition = "opacity 0.28s ease, transform 0.28s ease";
       el.style.opacity = "1";
       el.style.transform = "translateY(0)";
     });
-    return () => cancelAnimationFrame(raf);
-  }, [node]);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (panelRef.current === el) {
+        el.style.transition = "";
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+      }
+    };
+  }, [narrativeKey]);
 
   const pillClass =
     "rounded-md border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] font-medium text-[var(--text-muted)]";
@@ -373,21 +388,21 @@ export default function About({ overviewData }: AboutProps) {
     [overviewData, lowPerf],
   );
 
+  /** Read the *CSS-sized* graph frame only. The SVG is absolutely positioned so it cannot inflate this box (avoids ResizeObserver ↔ height feedback loops). */
   const measure = useCallback(() => {
     if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const w = Math.round(rect.width);
-    if (w <= 0) return;
-    const measuredH = Math.round(rect.height);
-    const fallbackH = Math.min(Math.max(Math.round(w * 0.46), 520), 640);
-    setDims({
-      width: w,
-      height: Math.max(480, measuredH > 120 ? measuredH : fallbackH),
-    });
+    const h = Math.round(rect.height);
+    if (w <= 0 || h <= 0) return;
+    setDims((prev) =>
+      prev.width === w && prev.height === h ? prev : { width: w, height: h },
+    );
   }, []);
 
   useEffect(() => {
     measure();
+    const raf = requestAnimationFrame(() => measure());
     window.addEventListener("resize", measure);
     const el = canvasRef.current;
     let ro: ResizeObserver | undefined;
@@ -396,6 +411,7 @@ export default function About({ overviewData }: AboutProps) {
       ro.observe(el);
     }
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("resize", measure);
       ro?.disconnect();
     };
@@ -430,9 +446,11 @@ export default function About({ overviewData }: AboutProps) {
 
   if (reduced) {
     return (
-      <section id="about" className="py-20 px-4 sm:px-8">
+      <section id="about" className="px-4 py-16 sm:px-6 sm:py-20 md:px-8">
         <div className="mx-auto max-w-[1400px]">
-          <h2 className="text-3xl font-bold tracking-tight text-white mb-4 text-gradient">About</h2>
+          <h2 className="mb-3 text-2xl font-bold tracking-tight text-white text-gradient sm:mb-4 sm:text-3xl">
+            About
+          </h2>
           <p className="text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Software engineer from IIT Kharagpur focused on backend systems,
             infrastructure, and developer tooling. I build production analytics
@@ -450,7 +468,7 @@ export default function About({ overviewData }: AboutProps) {
     <section
       ref={sectionRef}
       id="about"
-      className="relative overflow-x-hidden py-24 sm:py-28"
+      className="relative overflow-x-hidden py-16 sm:py-24 md:py-28"
     >
       {/* Section wash — full-bleed, low contrast */}
       <div
@@ -459,11 +477,11 @@ export default function About({ overviewData }: AboutProps) {
       />
 
       <div className="relative mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10">
-        <div data-anim className="mb-8 sm:mb-10">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl text-gradient">
+        <div data-anim className="mb-6 sm:mb-10">
+          <h2 className="text-2xl font-bold tracking-tight text-gradient sm:text-4xl md:text-5xl">
             About
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)] sm:mt-3 sm:text-base">
             How my roles, projects, and skills connect — an evolving{" "}
             <strong className="font-semibold text-white/90">system</strong>, not a timeline.
           </p>
@@ -471,7 +489,7 @@ export default function About({ overviewData }: AboutProps) {
 
         <div
           data-anim
-          className="mb-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs sm:text-sm text-[var(--text-muted)]"
+          className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2.5 text-[11px] text-[var(--text-muted)] sm:mb-8 sm:gap-x-8 sm:gap-y-3 sm:text-sm"
         >
           {LEGEND.map((item) => (
             <div key={item.key} className="flex items-center gap-2">
@@ -488,19 +506,25 @@ export default function About({ overviewData }: AboutProps) {
       {/* Centerpiece: graph + glowing spine + panel share one card height (lg+) */}
       <div
         data-anim
-        className="relative mx-auto w-full max-w-[1600px] px-2 sm:px-4 lg:px-8 xl:px-10"
+        className="relative mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-8 xl:px-10"
       >
-        <div className="flex flex-col gap-6 lg:gap-0">
+        <div className="flex flex-col gap-4 sm:gap-6 lg:gap-0">
           <div
             className={[
-              "flex min-h-0 flex-col overflow-hidden rounded-2xl border border-cyan-500/15 bg-[#030508]",
+              "flex min-h-0 flex-col overflow-hidden rounded-xl border border-cyan-500/15 bg-[#030508] sm:rounded-2xl",
               "shadow-[0_0_0_1px_rgba(34,211,238,0.08)_inset,0_0_80px_-20px_rgba(34,211,238,0.14)]",
               "lg:flex-row lg:items-stretch lg:min-h-[min(640px,76vh)]",
             ].join(" ")}
           >
             <div
               ref={canvasRef}
-              className="relative isolate min-h-[520px] w-full flex-1 overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#030508] shadow-[0_0_0_1px_rgba(34,211,238,0.06)_inset,0_0_80px_-20px_rgba(34,211,238,0.12)] sm:min-h-[560px] lg:min-h-0 lg:rounded-none lg:border-0 lg:shadow-none"
+              className={[
+                "relative isolate w-full min-w-0 overflow-hidden rounded-xl border border-cyan-500/10 bg-[#030508]",
+                "shadow-[0_0_0_1px_rgba(34,211,238,0.06)_inset,0_0_80px_-20px_rgba(34,211,238,0.12)] sm:rounded-2xl",
+                /* Mobile/tablet: fixed aspect + max height — height does NOT come from SVG (prevents runaway vertical growth). */
+                "max-lg:mx-auto max-lg:flex-none max-lg:aspect-[10/7] max-lg:max-h-[min(380px,85vw)] max-lg:min-h-0 sm:max-lg:max-h-[min(440px,82vw)]",
+                "lg:flex-1 lg:aspect-auto lg:max-h-none lg:min-h-0 lg:rounded-none lg:border-0 lg:shadow-none",
+              ].join(" ")}
               onMouseMove={onMouseMove}
             >
             <div
@@ -538,19 +562,21 @@ export default function About({ overviewData }: AboutProps) {
               }}
             />
 
-            <GraphErrorBoundary>
-              {dims.width > 0 && (
-                <CareerGraph
-                  data={graphData}
-                  width={dims.width}
-                  height={dims.height}
-                  storyNodeIds={STORY_NODE_IDS}
-                  storyEdges={STORY_EDGES}
-                  onNodeSelect={onSelect}
-                  onNodeHoverChange={onHover}
-                />
-              )}
-            </GraphErrorBoundary>
+            <div className="absolute inset-0 z-[1] min-h-0 min-w-0">
+              <GraphErrorBoundary>
+                {dims.width > 0 && dims.height > 0 && (
+                  <CareerGraph
+                    data={graphData}
+                    width={dims.width}
+                    height={dims.height}
+                    storyNodeIds={STORY_NODE_IDS}
+                    storyEdges={STORY_EDGES}
+                    onNodeSelect={onSelect}
+                    onNodeHoverChange={onHover}
+                  />
+                )}
+              </GraphErrorBoundary>
+            </div>
 
             <Tooltip
               node={hovered && !selected ? hovered : null}
@@ -558,17 +584,17 @@ export default function About({ overviewData }: AboutProps) {
             />
 
             <div
-              className="pointer-events-none absolute inset-0 rounded-2xl lg:rounded-none"
+              className="pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl lg:rounded-none"
               style={{
                 background:
                   "radial-gradient(ellipse at center, transparent 45%, rgba(2,4,8,0.75) 100%)",
               }}
             />
 
-            <p className="pointer-events-none absolute bottom-4 left-1/2 z-10 hidden max-w-[90%] -translate-x-1/2 text-center text-[11px] text-[var(--text-muted)]/55 sm:block sm:text-xs">
+            <p className="pointer-events-none absolute bottom-3 left-1/2 z-10 hidden max-w-[min(92%,20rem)] -translate-x-1/2 px-2 text-center text-[11px] leading-snug text-[var(--text-muted)]/55 sm:bottom-4 sm:block sm:max-w-[90%] sm:px-0 sm:text-xs">
               Guided path highlighted — click any node for details
             </p>
-            <p className="pointer-events-none absolute bottom-4 left-1/2 z-10 max-w-[90%] -translate-x-1/2 text-center text-[11px] text-[var(--text-muted)]/55 sm:hidden">
+            <p className="pointer-events-none absolute bottom-3 left-1/2 z-10 max-w-[min(92%,18rem)] -translate-x-1/2 px-2 text-center text-[10px] leading-snug text-[var(--text-muted)]/55 sm:bottom-4 sm:hidden sm:text-[11px]">
               Tap a node for details
             </p>
             </div>
@@ -593,9 +619,9 @@ export default function About({ overviewData }: AboutProps) {
       </div>
 
       {selected && (
-        <div className="mx-auto mt-6 w-full max-w-[1600px] px-4 sm:px-6 lg:hidden">
-          <div className="rounded-2xl border border-white/10 border-l-2 border-l-cyan-400/55 bg-black/40 px-5 py-4 shadow-[0_0_40px_-14px_rgba(34,211,238,0.15)] backdrop-blur-xl">
-            <NarrativePanel node={selected} compact />
+        <div className="mx-auto mt-4 w-full max-w-[1600px] px-3 sm:mt-6 sm:px-6 lg:hidden">
+          <div className="max-h-[min(70dvh,560px)] overflow-y-auto overscroll-contain rounded-xl border border-white/10 border-l-2 border-l-cyan-400/55 bg-black/40 px-4 py-3.5 shadow-[0_0_40px_-14px_rgba(34,211,238,0.15)] backdrop-blur-xl sm:rounded-2xl sm:px-5 sm:py-4">
+            <NarrativePanel key={selected.id} node={selected} compact />
           </div>
         </div>
       )}

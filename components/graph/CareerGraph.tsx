@@ -102,9 +102,20 @@ function computeLayout(
   const pos = new Map<string, { x: number; y: number }>();
   if (w === 0 || h === 0) return pos;
 
+  /** Shrink radial offsets on narrow canvases; keeps satellites inside the viewBox. */
+  const layoutScale = Math.min(1, Math.max(0.42, w / 520));
+  const pad = Math.max(28, Math.min(44, w * 0.09));
+
   const storyIds = new Set(Object.keys(STORY_POS));
   for (const [id, [fx, fy]] of Object.entries(STORY_POS)) {
-    pos.set(id, { x: fx * w, y: fy * h });
+    let x = fx * w;
+    let y = fy * h;
+    if (w < 520) {
+      const cx = 0.5 * w;
+      x = cx + (x - cx) * (0.82 + 0.18 * (w / 520));
+      y = Math.min(Math.max(y, pad + 40), h - pad - 40);
+    }
+    pos.set(id, { x, y });
   }
 
   const adj = new Map<string, Set<string>>();
@@ -142,7 +153,7 @@ function computeLayout(
     const projects = children.filter((n) => n.type === "project");
     const skills = children.filter((n) => n.type !== "project");
 
-    const skAngle =
+    let skAngle =
       px < 0.25
         ? Math.PI
         : px > 0.55
@@ -151,7 +162,12 @@ function computeLayout(
             ? -Math.PI / 2
             : Math.PI / 2;
     const skSpread = Math.PI * 0.55;
-    const skDist = 96 + skills.length * 6;
+    const skDist = (96 + skills.length * 6) * layoutScale;
+    const midSkillA = skAngle;
+    const probeX = p.x + skDist * Math.cos(midSkillA);
+    if (probeX > w - pad) skAngle = Math.PI;
+    else if (probeX < pad) skAngle = 0;
+
     skills.forEach((sk, i) => {
       const f = skills.length === 1 ? 0.5 : i / (skills.length - 1);
       const a = skAngle - skSpread / 2 + skSpread * f;
@@ -161,9 +177,10 @@ function computeLayout(
       });
     });
 
-    const prAngle = px > 0.55 ? Math.PI * 0.08 : Math.PI * 0.05;
+    let prAngle = px > 0.55 ? Math.PI * 0.08 : Math.PI * 0.05;
+    if (p.x > w * 0.58) prAngle = Math.PI - Math.PI * 0.1;
     const prSpread = Math.PI * 0.35;
-    const prDist = 118;
+    const prDist = 118 * layoutScale;
     projects.forEach((pr, i) => {
       const f = projects.length === 1 ? 0.5 : i / (projects.length - 1);
       const a = prAngle - prSpread / 2 + prSpread * f;
@@ -175,10 +192,11 @@ function computeLayout(
   }
 
   let oy = h * 0.2;
+  const orphanStep = 48 * layoutScale;
   for (const n of data.nodes) {
     if (!pos.has(n.id)) {
-      pos.set(n.id, { x: w * 0.88, y: oy });
-      oy += 48;
+      pos.set(n.id, { x: Math.min(w * 0.88, w - pad), y: oy });
+      oy += orphanStep;
     }
   }
   return pos;
@@ -314,11 +332,13 @@ export default function CareerGraph({
 
   // ── Render ────────────────────────────────────────────────
 
+  if (width <= 0 || height <= 0) return null;
+
   return (
     <svg
-      width={width}
-      height={height}
       viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="xMidYMid meet"
+      className="block h-full w-full max-h-full max-w-full touch-manipulation"
       onClick={handleBgClick}
       style={{ cursor: "default", overflow: "visible" }}
     >
@@ -360,7 +380,9 @@ export default function CareerGraph({
         const edgeOpacity = connected
           ? isHL
             ? 1
-            : 0.04
+            : isSL
+              ? 0.34
+              : 0.04
           : isSL
             ? 1
             : 0.055;
@@ -545,8 +567,9 @@ export default function CareerGraph({
         const isActive =
           hoveredId === node.id || focusedId === node.id;
 
+        /** Focus/hover spotlights neighbors; career tiles stay visible so the story path never “turns off.” */
         const nodeOpacity = connected
-          ? connected.has(node.id)
+          ? connected.has(node.id) || inPrimary
             ? 1
             : 0.06
           : inPrimary
@@ -865,7 +888,8 @@ export default function CareerGraph({
                     : "rgba(120,120,120,0.6)"
                 }
                 fontSize={
-                  isRoot ? 15 : node.type === "role" ? 13 : 11.5
+                  (isRoot ? 15 : node.type === "role" ? 13 : 11.5) *
+                  (width < 420 ? 0.9 : 1)
                 }
                 fontWeight={inPrimary || isActive ? 600 : 400}
                 fontFamily="Inter, system-ui, sans-serif"
