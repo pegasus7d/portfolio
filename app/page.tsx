@@ -6,13 +6,16 @@ import {
   Skills,
   Contact,
 } from "@/components/sections";
+import { GraphSection } from "@/components/graph";
 import { getAllProjects, getAllPosts } from "@/lib/content";
+import { buildGraphData } from "@/lib/graph";
 import { getPersonSchema } from "@/lib/jsonld";
 
 export default function Home() {
   const projects = getAllProjects();
   const posts = getAllPosts().slice(0, 3);
   const jsonLd = getPersonSchema();
+  const graphData = buildGraphData();
 
   return (
     <>
@@ -24,6 +27,7 @@ export default function Home() {
       <About />
       <Projects projects={projects} />
       <Skills />
+      <GraphSection data={graphData} />
       <BlogPreview posts={posts} />
       <Contact />
     </>

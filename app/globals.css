@@ -186,3 +186,8 @@ body {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
 }
+
+/* ── Knowledge Graph ────────────────────────────────────────── */
+#graph canvas {
+  border-radius: 0.75rem;
+}
