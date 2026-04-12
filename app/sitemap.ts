@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { getProjectSlugs, getPostSlugs } from "@/lib/content";
+import { siteUrl } from "@/lib/site";
 
-const BASE_URL = "https://debayan.dev";
+const BASE_URL = siteUrl;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const projectRoutes = getProjectSlugs().map((slug) => ({

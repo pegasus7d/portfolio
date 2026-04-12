@@ -1,9 +1,11 @@
+import { siteUrl } from "@/lib/site";
+
 export function getPersonSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Person",
     name: "Debayan Biswas",
-    url: "https://debayan.dev",
+    url: siteUrl,
     jobTitle: "Software Engineer",
     alumniOf: {
       "@type": "CollegeOrUniversity",

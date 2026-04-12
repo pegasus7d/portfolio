@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { inter, jetbrainsMono } from "@/lib/fonts";
+import { siteUrl, siteUrlObject } from "@/lib/site";
 import { Navbar, Footer } from "@/components/layout";
 import { JourneyRail } from "@/components/journey";
 import "./globals.css";
@@ -11,12 +12,12 @@ export const metadata: Metadata = {
   },
   description:
     "Backend and systems engineer. Production analytics, agentic runtimes, data pipelines, LLM and MCP integrations.",
-  metadataBase: new URL("https://debayan.dev"),
+  metadataBase: siteUrlObject,
   openGraph: {
     title: "Debayan Biswas — Software Engineer",
     description:
       "Backend and systems engineer. Production analytics, agentic runtimes, data pipelines, LLM and MCP integrations.",
-    url: "https://debayan.dev",
+    url: siteUrl,
     siteName: "Debayan Biswas",
     locale: "en_US",
     type: "website",
