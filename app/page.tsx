@@ -8,11 +8,7 @@ import {
 } from "@/components/sections";
 import { GraphSection } from "@/components/graph";
 import { getAllProjects, getAllPosts } from "@/lib/content";
-import {
-  buildOverviewGraph,
-  buildEvolutionGraph,
-  buildGraphData,
-} from "@/lib/graph";
+import { buildOverviewGraph, buildEvolutionGraph } from "@/lib/graph";
 import { getPersonSchema } from "@/lib/jsonld";
 
 export default function Home() {
@@ -21,8 +17,6 @@ export default function Home() {
   const jsonLd = getPersonSchema();
   const overviewData = buildOverviewGraph();
   const exploreData = buildEvolutionGraph();
-  const graphData = buildGraphData();
-
   return (
     <>
       <script
@@ -33,7 +27,7 @@ export default function Home() {
       <About overviewData={overviewData} exploreData={exploreData} />
       <Projects projects={projects} />
       <Skills />
-      <GraphSection data={graphData} />
+      <GraphSection />
       <BlogPreview posts={posts} />
       <Contact />
     </>

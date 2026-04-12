@@ -8,7 +8,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 const NAV_LINKS = [
   { label: "About", href: "/#about" },
   { label: "Projects", href: "/#projects" },
-  { label: "Graph", href: "/#graph" },
+  { label: "Systems", href: "/#graph" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/#contact" },
 ] as const;
