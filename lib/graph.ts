@@ -112,7 +112,7 @@ const IIT_NODE: GraphNode = {
   summary: "B.Sc. (Hons.) Physics — built engineering skills through internships, open-source, and coursework in systems and algorithms.",
   impact: "Foundation in physics-driven problem solving and systems thinking.",
   techs: ["algorithms", "systems", "physics"],
-  logo: "/logos/iitkgp-logo.png",
+  logo: "/logos/iitkgp-logo.jpg",
   storyOrder: 0,
 };
 
