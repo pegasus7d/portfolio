@@ -6,9 +6,11 @@ import type { ProjectMeta } from "@/lib/types";
 
 interface ProjectCardProps {
   project: ProjectMeta;
+  /** Pulsed when linked from the career graph or system map */
+  highlighted?: boolean;
 }
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({ project, highlighted }: ProjectCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -38,7 +40,16 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   }, []);
 
   return (
-    <Link href={`/projects/${project.slug}`}>
+    <Link
+      href={`/projects/${project.slug}`}
+      data-project-slug={project.slug}
+      className={[
+        "block h-full rounded-lg transition-[box-shadow,ring-color] duration-500 ease-out",
+        highlighted
+          ? "ring-2 ring-[var(--accent)]/90 ring-offset-2 ring-offset-[var(--bg)] shadow-[0_0_36px_-6px_rgba(59,130,246,0.5)]"
+          : "",
+      ].join(" ")}
+    >
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}

@@ -13,6 +13,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import GraphErrorBoundary from "./GraphErrorBoundary";
+import { SectionContinue } from "@/components/journey";
+import {
+  HIGHLIGHT_TECH_EVENT,
+  scrollToSectionId,
+  type HighlightTechDetail,
+} from "@/lib/journey";
+import { systemNodeMatchesStack } from "@/lib/stack-match";
+import type { ProjectMeta } from "@/lib/types";
 import { buildSystemGraph } from "@/lib/system-graph";
 import type { SystemNode } from "@/lib/system-graph";
 
@@ -27,7 +35,11 @@ const SystemVisualization = dynamic(() => import("./SystemVisualization"), {
 
 const systemData = buildSystemGraph();
 
-export default function GraphSection() {
+interface GraphSectionProps {
+  projects: ProjectMeta[];
+}
+
+export default function GraphSection({ projects }: GraphSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasWrapRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 0, height: 0 });
@@ -93,6 +105,25 @@ export default function GraphSection() {
   }, [reduced]);
 
   const stableData = useMemo(() => systemData, []);
+
+  const onSystemSelect = useCallback(
+    (node: SystemNode | null) => {
+      setSelected(node);
+      if (!node) return;
+      const matchingSlugs = projects
+        .filter((p) => systemNodeMatchesStack(node, p.stack))
+        .map((p) => p.slug);
+      window.dispatchEvent(
+        new CustomEvent<HighlightTechDetail>(HIGHLIGHT_TECH_EVENT, {
+          detail: { nodeId: node.id, matchingSlugs },
+        }),
+      );
+      if (matchingSlugs.length > 0) {
+        scrollToSectionId("projects");
+      }
+    },
+    [projects],
+  );
 
   if (reduced) {
     return (
@@ -179,7 +210,7 @@ export default function GraphSection() {
                   width={dims.width}
                   height={dims.height}
                   reducedMotion={reduced}
-                  onSelect={setSelected}
+                  onSelect={onSystemSelect}
                 />
               )}
             </GraphErrorBoundary>
@@ -233,6 +264,10 @@ export default function GraphSection() {
           Calm motion by design — click empty space on the map to clear your
           selection.
         </p>
+
+        <div className="relative mx-auto mt-4 w-full max-w-[1600px] px-4 sm:px-8">
+          <SectionContinue cta="Read my thinking ↓" toId="blog" />
+        </div>
       </div>
     </section>
   );

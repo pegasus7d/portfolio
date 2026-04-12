@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useRef } from "react";
 import { SectionWrapper } from "@/components/layout";
+import { SectionContinue } from "@/components/journey";
 import { Textify } from "@/components/textify";
 import type { PostMeta } from "@/lib/types";
 
@@ -81,6 +82,8 @@ export default function BlogPreview({ posts }: BlogPreviewProps) {
           <BlogCard key={post.slug} post={post} />
         ))}
       </div>
+
+      <SectionContinue cta="Get in touch ↓" toId="contact" />
     </SectionWrapper>
   );
 }

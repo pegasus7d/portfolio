@@ -2,6 +2,7 @@
 
 import { useRef, useLayoutEffect } from "react";
 import { SectionWrapper } from "@/components/layout";
+import { SectionContinue } from "@/components/journey";
 import { Textify } from "@/components/textify";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -118,6 +119,8 @@ export default function Skills() {
           </div>
         ))}
       </div>
+
+      <SectionContinue cta="See systems I designed ↓" toId="graph" />
     </SectionWrapper>
   );
 }

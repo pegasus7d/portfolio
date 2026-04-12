@@ -9,9 +9,16 @@ import {
   useCallback,
 } from "react";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import GraphErrorBoundary from "@/components/graph/GraphErrorBoundary";
+import { SectionContinue } from "@/components/journey";
+import {
+  HIGHLIGHT_PROJECT_EVENT,
+  scrollToSectionId,
+  type HighlightProjectDetail,
+} from "@/lib/journey";
 import {
   STORY_NODE_IDS,
   STORY_EDGES,
@@ -374,6 +381,7 @@ interface AboutProps {
 }
 
 export default function About({ overviewData }: AboutProps) {
+  const pathname = usePathname();
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 0, height: 0 });
@@ -417,7 +425,27 @@ export default function About({ overviewData }: AboutProps) {
     };
   }, [measure]);
 
-  const onSelect = useCallback((n: GraphNode | null) => setSelected(n), []);
+  const onSelect = useCallback(
+    (n: GraphNode | null) => {
+      setSelected(n);
+      if (
+        pathname === "/" &&
+        n?.type === "project" &&
+        n.id.startsWith("project:")
+      ) {
+        const slug = n.id.slice("project:".length);
+        scrollToSectionId("projects");
+        queueMicrotask(() => {
+          window.dispatchEvent(
+            new CustomEvent<HighlightProjectDetail>(HIGHLIGHT_PROJECT_EVENT, {
+              detail: { slug },
+            }),
+          );
+        });
+      }
+    },
+    [pathname],
+  );
   const onHover = useCallback((n: GraphNode | null) => setHovered(n), []);
 
   const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -459,6 +487,7 @@ export default function About({ overviewData }: AboutProps) {
           <p className="mt-3 text-sm text-[var(--text-muted)]/70">
             Interactive graph disabled for reduced-motion preference.
           </p>
+          <SectionContinue cta="See projects I built ↓" toId="projects" />
         </div>
       </section>
     );
@@ -625,6 +654,10 @@ export default function About({ overviewData }: AboutProps) {
           </div>
         </div>
       )}
+
+      <div className="relative mx-auto w-full max-w-[1600px] px-4 sm:px-6">
+        <SectionContinue cta="See projects I built ↓" toId="projects" />
+      </div>
     </section>
   );
 }

@@ -5,57 +5,52 @@ import {
   useEffect,
   useRef,
   useLayoutEffect,
-  useCallback,
   useMemo,
 } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, LayoutGroup } from "framer-motion";
 import { gsap } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import {
+  JOURNEY_EVENT,
+  type JourneyDetail,
+} from "@/lib/journey";
 
 /** Place your PDF at `public/assets/resume.pdf` — it is served at /assets/resume.pdf and downloaded on click. */
 const RESUME_HREF = "/assets/resume.pdf";
 const RESUME_DOWNLOAD_NAME = "Debayan_Biswas_Resume.pdf";
 
-const SECTION_IDS = ["about", "projects", "graph", "contact"] as const;
-
 const NAV_LINKS = [
   { label: "About", href: "/#about", sectionId: "about" as const },
   { label: "Projects", href: "/#projects", sectionId: "projects" as const },
+  { label: "Skills", href: "/#skills", sectionId: "skills" as const },
   { label: "Architecture", href: "/#graph", sectionId: "graph" as const },
-  { label: "Blog", href: "/blog", sectionId: null },
+  { label: "Blog", href: "/#blog", sectionId: "blog" as const },
   { label: "Contact", href: "/#contact", sectionId: "contact" as const },
 ] as const;
 
-function useScrollActiveSection() {
+function useHomeJourney() {
   const pathname = usePathname();
-  const [activeSection, setActiveSection] = useState<string>("");
-
-  const update = useCallback(() => {
-    if (pathname !== "/") {
-      setActiveSection("");
-      return;
-    }
-    const y = window.scrollY + 96;
-    let current = "";
-    for (const id of SECTION_IDS) {
-      const el = document.getElementById(id);
-      if (el && el.offsetTop <= y) current = id;
-    }
-    setActiveSection(current);
-  }, [pathname]);
+  const [journey, setJourney] = useState<JourneyDetail>({
+    activeId: "",
+    progress: 0,
+  });
 
   useEffect(() => {
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+    const onJourney = (e: Event) => {
+      const d = (e as CustomEvent<JourneyDetail>).detail;
+      if (d) setJourney(d);
     };
-  }, [update]);
+    window.addEventListener(JOURNEY_EVENT, onJourney as EventListener);
+    return () =>
+      window.removeEventListener(JOURNEY_EVENT, onJourney as EventListener);
+  }, []);
 
-  return activeSection;
+  const activeSection = pathname === "/" ? journey.activeId : "";
+  const scrollProgress = pathname === "/" ? journey.progress : 0;
+
+  return { activeSection, scrollProgress };
 }
 
 export default function Navbar() {
@@ -64,9 +59,11 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
-  const activeSection = useScrollActiveSection();
+  const { activeSection, scrollProgress } = useHomeJourney();
 
-  const blogActive = pathname.startsWith("/blog");
+  const blogActive =
+    pathname.startsWith("/blog") ||
+    (pathname === "/" && activeSection === "blog");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -105,7 +102,7 @@ export default function Navbar() {
 
   const linkIsActive = useMemo(
     () => (sectionId: (typeof NAV_LINKS)[number]["sectionId"]) => {
-      if (sectionId === null) return blogActive;
+      if (sectionId === "blog") return blogActive;
       if (pathname !== "/") return false;
       return activeSection === sectionId;
     },
@@ -120,17 +117,32 @@ export default function Navbar() {
         : "text-[var(--text-muted)] hover:text-[var(--text-primary)]",
     ].join(" ");
 
+  const showProgress = pathname === "/";
+
   return (
     <header
       ref={navRef}
       className={[
         "fixed top-0 left-0 right-0 z-50 transition-[background,box-shadow,border-color,backdrop-filter] duration-300 ease-out",
-        scrolled
+        scrolled || mobileOpen
           ? "border-b border-white/[0.06] bg-[var(--bg)]/[0.72] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-xl backdrop-saturate-150"
           : "border-b border-transparent bg-transparent",
       ].join(" ")}
     >
-      {/* Top accent line on scroll */}
+      {showProgress && (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-0.5 overflow-hidden bg-black/20"
+          aria-hidden
+        >
+          <div
+            className="h-full w-full origin-left bg-gradient-to-r from-indigo-400 via-blue-400 to-violet-400 will-change-transform transition-[transform] duration-150 ease-out"
+            style={{
+              transform: `scaleX(${scrollProgress < 0.003 ? 0 : scrollProgress})`,
+            }}
+          />
+        </div>
+      )}
+
       <div
         className={[
           "pointer-events-none absolute inset-x-0 top-0 h-px transition-opacity duration-300",
@@ -143,7 +155,7 @@ export default function Navbar() {
         }}
       />
 
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-3.5 sm:px-6">
+      <nav className="relative z-[2] mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-3.5 sm:px-6">
         <Link
           href="/"
           data-nav-logo
@@ -161,27 +173,35 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">
-          <ul className="mr-1 flex items-center gap-0.5">
-            {NAV_LINKS.map((link) => {
-              const active = linkIsActive(link.sectionId);
-              return (
-                <li key={link.href} data-nav-animate>
-                  <Link
-                    href={link.href}
-                    className={`${navLinkClass(active)} rounded-lg px-3 py-2 hover:bg-white/[0.04] hover:shadow-[0_0_20px_-4px_rgba(99,102,241,0.25)]`}
-                  >
-                    <span className="relative z-10">{link.label}</span>
-                    {active && (
-                      <span
-                        className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full bg-gradient-to-r from-indigo-400/90 via-blue-400 to-violet-400/80 shadow-[0_0_14px_rgba(99,102,241,0.55)]"
-                        aria-hidden
-                      />
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <LayoutGroup id="nav-links">
+            <ul className="mr-1 flex items-center gap-0.5">
+              {NAV_LINKS.map((link) => {
+                const active = linkIsActive(link.sectionId);
+                return (
+                  <li key={link.href} data-nav-animate>
+                    <Link
+                      href={link.href}
+                      className={`${navLinkClass(active)} rounded-lg px-3 py-2 hover:bg-white/[0.04] hover:shadow-[0_0_20px_-4px_rgba(99,102,241,0.25)]`}
+                    >
+                      <span className="relative z-10">{link.label}</span>
+                      {active && (
+                        <motion.span
+                          layoutId="nav-underline"
+                          className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full bg-gradient-to-r from-indigo-400/90 via-blue-400 to-violet-400/80 shadow-[0_0_14px_rgba(99,102,241,0.55)]"
+                          aria-hidden
+                          transition={{
+                            type: "spring",
+                            stiffness: 420,
+                            damping: 34,
+                          }}
+                        />
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </LayoutGroup>
 
           <div
             className="ml-3 border-l border-white/[0.08] pl-4"

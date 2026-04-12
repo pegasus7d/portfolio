@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { inter, jetbrainsMono } from "@/lib/fonts";
 import { Navbar, Footer } from "@/components/layout";
+import { JourneyRail } from "@/components/journey";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,6 +33,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#0a0a0a" },
+  ],
+  colorScheme: "dark",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -51,7 +60,10 @@ export default function RootLayout({
           Skip to content
         </a>
         <Navbar />
-        <main id="main-content" className="pt-16">{children}</main>
+        <main id="main-content" className="pt-16">
+          {children}
+        </main>
+        <JourneyRail />
         <Footer />
       </body>
     </html>
