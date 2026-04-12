@@ -88,8 +88,8 @@ export default function Hero() {
           ref={ctaRef}
           className="mt-10 flex items-center justify-center gap-4"
         >
-          <a href="/#projects" className="btn-primary">
-            <span className="relative z-10">View Work</span>
+          <a href="/#about" className="btn-primary">
+            <span className="relative z-10">About</span>
           </a>
           <a href="/#contact" className="btn-secondary">
             Contact
