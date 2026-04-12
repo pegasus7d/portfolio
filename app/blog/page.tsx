@@ -11,9 +11,9 @@ export default function BlogIndex() {
   const posts = getAllPosts();
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-24 md:py-32">
-      <h1 className="text-4xl font-bold tracking-tight">Blog</h1>
-      <p className="mt-2 text-[var(--text-muted)]">
+    <div className="mx-auto w-full min-w-0 max-w-3xl px-4 py-20 sm:px-6 sm:py-24 md:py-32">
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Blog</h1>
+      <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
         Writing about backend systems, LLMs, infrastructure, and engineering.
       </p>
 

@@ -54,7 +54,7 @@ export default function ProjectCard({ project, highlighted }: ProjectCardProps) 
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="card-glow group h-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 transition-all duration-300 ease-out"
+        className="card-glow group h-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 transition-all duration-300 ease-out sm:p-6"
       >
         {project.featured && (
           <span className="mb-3 inline-block rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
@@ -62,7 +62,7 @@ export default function ProjectCard({ project, highlighted }: ProjectCardProps) 
           </span>
         )}
 
-        <h3 className="text-lg font-semibold tracking-tight group-hover:text-[var(--accent)] transition-colors">
+        <h3 className="text-base font-semibold tracking-tight transition-colors group-hover:text-[var(--accent)] sm:text-lg">
           {project.title}
         </h3>
 

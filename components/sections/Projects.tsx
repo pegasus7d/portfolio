@@ -54,11 +54,11 @@ export default function Projects({ projects }: ProjectsSectionProps) {
         trigger="scroll"
         duration={0.8}
       />
-      <p className="mt-2 text-[var(--text-muted)]">
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
         Systems I have designed, built, and shipped.
       </p>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
           <ProjectCard
             key={project.slug}

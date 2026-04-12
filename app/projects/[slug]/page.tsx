@@ -28,7 +28,7 @@ export default async function ProjectPage({ params }: Props) {
   if (!project) notFound();
 
   return (
-    <article className="mx-auto max-w-3xl px-6 py-24 md:py-32">
+    <article className="mx-auto w-full min-w-0 max-w-3xl px-4 py-20 sm:px-6 sm:py-24 md:py-32">
       <Link
         href="/#projects"
         className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
@@ -37,7 +37,7 @@ export default async function ProjectPage({ params }: Props) {
       </Link>
 
       <header className="mt-6">
-        <h1 className="text-4xl font-bold tracking-tight">{project.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{project.title}</h1>
         <p className="mt-2 text-[var(--text-muted)]">{project.summary}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {project.stack.map((tech) => (

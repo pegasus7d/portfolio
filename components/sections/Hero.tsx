@@ -57,7 +57,7 @@ export default function Hero() {
       ref={sectionRef}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
-      className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-6"
+      className="relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden px-4 sm:px-6"
     >
       <ParticleBg />
 
@@ -69,12 +69,12 @@ export default function Hero() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 max-w-2xl text-center">
+      <div className="relative z-10 w-full min-w-0 max-w-2xl text-center">
         <Textify
           variant="typewriter"
           content="Debayan Biswas"
           tag="h1"
-          className="text-gradient text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl"
+          className="text-gradient text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl"
           duration={1.4}
           cursor
         />
@@ -82,18 +82,18 @@ export default function Hero() {
           variant="stagger"
           content="Backend and systems engineer. Building production analytics, agentic runtimes, data pipelines, and LLM integrations."
           tag="p"
-          className="mt-6 text-lg text-[var(--text-muted)] sm:text-xl"
+          className="mt-6 text-base text-[var(--text-muted)] sm:text-lg md:text-xl"
           delay={1.6}
           duration={1.0}
         />
         <div
           ref={ctaRef}
-          className="mt-10 flex items-center justify-center gap-4"
+          className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4"
         >
-          <a href="/#about" className="btn-primary">
+          <a href="/#about" className="btn-primary w-full justify-center sm:w-auto">
             <span className="relative z-10">About</span>
           </a>
-          <a href="/#contact" className="btn-secondary">
+          <a href="/#contact" className="btn-secondary w-full justify-center sm:w-auto">
             Contact
           </a>
         </div>

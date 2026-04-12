@@ -27,7 +27,7 @@ function BlogCard({ post }: { post: PostMeta }) {
       <div
         ref={ref}
         onMouseMove={onMove}
-        className="card-glow group h-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6"
+        className="card-glow group h-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6"
       >
         <time className="text-xs text-[var(--text-muted)]">
           {new Date(post.date).toLocaleDateString("en-US", {
@@ -60,24 +60,24 @@ function BlogCard({ post }: { post: PostMeta }) {
 export default function BlogPreview({ posts }: BlogPreviewProps) {
   return (
     <SectionWrapper id="blog" staggerChildren>
-      <div className="flex items-baseline justify-between">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
         <Textify
           variant="reveal"
           content="Blog"
           tag="h2"
-          className="text-3xl font-bold tracking-tight sm:text-4xl"
+          className="min-w-0 text-3xl font-bold tracking-tight sm:text-4xl"
           trigger="scroll"
           duration={0.8}
         />
         <Link
           href="/blog"
-          className="text-sm text-[var(--accent)] hover:opacity-80 transition-opacity"
+          className="shrink-0 text-sm text-[var(--accent)] transition-opacity hover:opacity-80"
         >
           View all &rarr;
         </Link>
       </div>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
           <BlogCard key={post.slug} post={post} />
         ))}

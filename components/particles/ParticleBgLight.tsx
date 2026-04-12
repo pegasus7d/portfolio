@@ -69,9 +69,7 @@ export default function ParticleBgLight() {
           width: 1,
         },
         shadow: {
-          enable: true,
-          blur: 6,
-          color: "#3b82f6",
+          enable: false,
         },
       },
       interactivity: {
@@ -90,11 +88,16 @@ export default function ParticleBgLight() {
   if (!ready) return null;
 
   return (
-    <Particles
-      id="contact-particles"
-      className="absolute inset-0 -z-10"
-      options={options}
-      particlesLoaded={handleLoaded}
-    />
+    <div
+      className="pointer-events-none absolute inset-0 -z-10 min-h-0 min-w-0 overflow-hidden"
+      aria-hidden
+    >
+      <Particles
+        id="contact-particles"
+        className="h-full w-full max-w-full"
+        options={options}
+        particlesLoaded={handleLoaded}
+      />
+    </div>
   );
 }

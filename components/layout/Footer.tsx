@@ -52,7 +52,7 @@ export default function Footer() {
         }}
       />
 
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-5 px-6 py-10 sm:flex-row sm:justify-between">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center gap-5 px-4 py-10 sm:flex-row sm:justify-between sm:px-6">
         <div className="flex items-center gap-3">
           <Link
             href="/"

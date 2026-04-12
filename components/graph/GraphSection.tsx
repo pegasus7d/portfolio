@@ -53,7 +53,8 @@ export default function GraphSection({ projects }: GraphSectionProps) {
     const w = Math.round(rect.width);
     if (w < 32) return;
     const h = Math.max(360, Math.round(rect.height));
-    setDims({ width: w, height: Math.min(h, 640) });
+    const maxCanvasH = w < 768 ? 520 : 640;
+    setDims({ width: w, height: Math.min(h, maxCanvasH) });
   }, []);
 
   useEffect(() => {
@@ -128,7 +129,7 @@ export default function GraphSection({ projects }: GraphSectionProps) {
   if (reduced) {
     return (
       <section id="graph" className="relative w-full py-24">
-        <div className="mx-auto max-w-3xl px-6 text-center">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <h2 className="mb-4 text-3xl font-bold tracking-tight text-white">
             System map
           </h2>
@@ -196,7 +197,7 @@ export default function GraphSection({ projects }: GraphSectionProps) {
 
       <div
         data-sys-canvas
-        className="relative mx-auto mt-12 w-[min(92vw,1420px)]"
+        className="relative mx-auto mt-12 w-full max-w-[1420px] px-4 sm:px-6"
       >
         <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#05060a]/85 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_0_100px_-40px_rgba(59,130,246,0.12)] lg:flex-row lg:items-stretch">
           <div

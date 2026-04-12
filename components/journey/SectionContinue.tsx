@@ -17,7 +17,7 @@ export default function SectionContinue({
   return (
     <div
       className={[
-        "mt-14 flex justify-center border-t border-white/[0.06] pt-10 md:mt-16 md:pt-12",
+        "mt-14 flex justify-center border-t border-white/[0.06] px-2 pt-10 md:mt-16 md:pt-12",
         className,
       ].join(" ")}
     >
@@ -26,7 +26,7 @@ export default function SectionContinue({
         onClick={() => scrollToSectionId(toId, "smooth")}
         className="group flex flex-col items-center gap-2 text-center text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
       >
-        <span className="font-medium tracking-wide text-[var(--text-muted)] transition group-hover:text-[var(--accent)]">
+        <span className="max-w-[min(100%,22rem)] text-balance font-medium tracking-wide text-[var(--text-muted)] transition group-hover:text-[var(--accent)]">
           {cta}
         </span>
         <span

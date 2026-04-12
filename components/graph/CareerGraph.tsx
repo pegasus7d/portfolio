@@ -340,7 +340,7 @@ export default function CareerGraph({
       preserveAspectRatio="xMidYMid meet"
       className="block h-full w-full max-h-full max-w-full touch-manipulation"
       onClick={handleBgClick}
-      style={{ cursor: "default", overflow: "visible" }}
+      style={{ cursor: "default", overflow: "hidden" }}
     >
       <defs>
         <filter id="desat">

@@ -85,11 +85,16 @@ export default function ParticleBg() {
   if (!ready) return null;
 
   return (
-    <Particles
-      id="hero-particles"
-      className="absolute inset-0 -z-10"
-      options={options}
-      particlesLoaded={handleLoaded}
-    />
+    <div
+      className="pointer-events-none absolute inset-0 -z-10 min-h-0 min-w-0 overflow-hidden"
+      aria-hidden
+    >
+      <Particles
+        id="hero-particles"
+        className="h-full w-full max-w-full"
+        options={options}
+        particlesLoaded={handleLoaded}
+      />
+    </div>
   );
 }

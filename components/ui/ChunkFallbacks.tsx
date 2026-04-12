@@ -28,7 +28,9 @@ export function GraphChunkFallback() {
       <div className="mx-auto max-w-[1600px] px-4 sm:px-8">
         <div className="mx-auto h-9 max-w-xs animate-pulse rounded-lg bg-white/[0.08] sm:h-10" />
         <div className="mx-auto mt-4 h-4 max-w-2xl animate-pulse rounded bg-white/[0.06]" />
-        <div className="mx-auto mt-12 min-h-[420px] w-[min(92vw,1420px)] animate-pulse rounded-2xl border border-white/[0.08] bg-[#05060a]/90 lg:min-h-[520px]" />
+        <div className="mx-auto mt-12 w-full max-w-[1420px] px-4 sm:px-6">
+          <div className="min-h-[420px] animate-pulse rounded-2xl border border-white/[0.08] bg-[#05060a]/90 lg:min-h-[520px]" />
+        </div>
       </div>
     </section>
   );
@@ -38,7 +40,7 @@ export function BlogChunkFallback() {
   return (
     <section
       id="blog"
-      className="relative mx-auto max-w-5xl scroll-mt-20 overflow-hidden px-6 py-24 md:py-32"
+      className="relative mx-auto max-w-5xl scroll-mt-20 overflow-hidden px-4 py-20 sm:px-6 sm:py-24 md:py-32"
       aria-busy="true"
       aria-label="Loading blog section"
     >
@@ -59,7 +61,7 @@ export function ContactChunkFallback() {
   return (
     <section
       id="contact"
-      className="relative mx-auto max-w-5xl scroll-mt-20 overflow-hidden px-6 py-24 md:py-32"
+      className="relative mx-auto max-w-5xl scroll-mt-20 overflow-hidden px-4 py-20 sm:px-6 sm:py-24 md:py-32"
       aria-busy="true"
       aria-label="Loading contact section"
     >

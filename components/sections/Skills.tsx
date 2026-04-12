@@ -96,9 +96,9 @@ export default function Skills() {
         duration={0.8}
       />
 
-      <div ref={gridRef} className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div ref={gridRef} className="mt-10 grid min-w-0 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {SKILL_GROUPS.map((group) => (
-          <div key={group.label} data-skill-group>
+          <div key={group.label} data-skill-group className="min-w-0">
             <h3
               data-skill-label
               className="text-sm font-semibold uppercase tracking-wider text-[var(--accent)]"

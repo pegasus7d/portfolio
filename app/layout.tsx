@@ -48,10 +48,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-background text-foreground font-sans antialiased">
+      <body className="min-h-screen max-w-full overflow-x-hidden bg-background font-sans text-foreground antialiased">
         {/* Ambient background glow */}
         <div className="ambient-glow" aria-hidden="true" />
-        <div aria-hidden="true">
+        <div
+          className="pointer-events-none fixed inset-0 -z-[15] overflow-x-hidden"
+          aria-hidden="true"
+        >
           <div className="gradient-blob gradient-blob--blue" />
           <div className="gradient-blob gradient-blob--purple" />
         </div>
@@ -60,7 +63,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <Navbar />
-        <main id="main-content" className="pt-16">
+        <main id="main-content" className="min-w-0 max-w-full overflow-x-hidden pt-16">
           {children}
         </main>
         <JourneyRail />

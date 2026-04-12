@@ -28,7 +28,7 @@ export default function SectionWrapper({
     <section
       ref={ref}
       id={id}
-      className={`mx-auto max-w-5xl px-6 py-24 md:py-32 ${className}`}
+      className={`mx-auto w-full min-w-0 max-w-5xl px-4 sm:px-6 py-20 sm:py-24 md:py-32 ${className}`}
     >
       {children}
     </section>

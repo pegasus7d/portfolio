@@ -204,7 +204,8 @@ export default function SystemVisualization({
   const particlesRef = useRef<Particle[]>([]);
   useEffect(() => {
     if (width > 0 && height > 0) {
-      particlesRef.current = makeParticles(width, height, 42);
+      const count = width < 480 ? 16 : width < 768 ? 28 : 42;
+      particlesRef.current = makeParticles(width, height, count);
     }
   }, [width, height]);
 

@@ -1,6 +1,6 @@
 export default function BlogLoading() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-24 md:py-32">
+    <div className="mx-auto w-full min-w-0 max-w-3xl px-4 py-20 sm:px-6 sm:py-24 md:py-32">
       <div className="h-10 w-24 animate-pulse rounded bg-[var(--surface)]" />
       <div className="mt-2 h-5 w-64 animate-pulse rounded bg-[var(--surface)]" />
 

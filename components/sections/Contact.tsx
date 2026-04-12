@@ -141,17 +141,61 @@ export default function Contact() {
   }, [reduced]);
 
   return (
-    <SectionWrapper id="contact">
+    <SectionWrapper id="contact" className="overflow-x-hidden">
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={sectionInnerRef}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
-        className="relative text-center"
+        className="relative isolate overflow-hidden text-center"
       >
-        <ParticleBgLight />
+        {/* Decorative layer: clip blur orbs + particles to section width */}
+        <div
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+          aria-hidden
+        >
+          <ParticleBgLight />
 
-        {/* Cursor-follow spotlight */}
+          {/* Primary light — centered on heading, moderate intensity */}
+          <div
+            ref={blobARef}
+            className="pointer-events-none absolute left-1/2 w-[min(120%,36rem)] max-w-[100vw] -translate-x-1/2 will-change-transform"
+            aria-hidden="true"
+            style={{
+              height: 400,
+              top: "-20%",
+              filter: "blur(40px)",
+              background:
+                "radial-gradient(ellipse at center, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.04) 40%, transparent 70%)",
+            }}
+          />
+          {/* Secondary fill — kept within horizontal bounds */}
+          <div
+            ref={blobBRef}
+            className="pointer-events-none absolute left-0 w-[min(130%,28rem)] max-w-[100vw] will-change-transform"
+            aria-hidden="true"
+            style={{
+              height: 500,
+              top: "-5%",
+              filter: "blur(50px)",
+              background:
+                "radial-gradient(ellipse at center, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.02) 35%, transparent 65%)",
+            }}
+          />
+          {/* Tertiary fill — right side, width capped */}
+          <div
+            className="pointer-events-none absolute bottom-[-15%] right-0 w-[min(130%,32rem)] max-w-[100vw]"
+            aria-hidden="true"
+            style={{
+              height: 450,
+              filter: "blur(50px)",
+              background:
+                "radial-gradient(ellipse at center, rgba(59,130,246,0.04) 0%, transparent 55%)",
+            }}
+          />
+        </div>
+
+        {/* Cursor-follow spotlight (outside clip layer so it tracks over content) */}
         <div
           ref={spotlightRef}
           className="pointer-events-none absolute hidden md:block"
@@ -165,47 +209,6 @@ export default function Contact() {
             opacity: spotlightVisible ? 1 : 0,
             transition: "opacity 0.4s",
             zIndex: 1,
-          }}
-        />
-
-        {/* Primary light — centered on heading, moderate intensity */}
-        <div
-          ref={blobARef}
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2 will-change-transform"
-          aria-hidden="true"
-          style={{
-            width: 600,
-            height: 400,
-            top: "-20%",
-            filter: "blur(40px)",
-            background: "radial-gradient(ellipse at center, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.04) 40%, transparent 70%)",
-          }}
-        />
-        {/* Secondary fill — offset left, larger, softer */}
-        <div
-          ref={blobBRef}
-          className="pointer-events-none absolute will-change-transform"
-          aria-hidden="true"
-          style={{
-            width: 700,
-            height: 500,
-            top: "-5%",
-            left: "-10%",
-            filter: "blur(50px)",
-            background: "radial-gradient(ellipse at center, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.02) 35%, transparent 65%)",
-          }}
-        />
-        {/* Tertiary fill — offset right-low, widest, faintest */}
-        <div
-          className="pointer-events-none absolute"
-          aria-hidden="true"
-          style={{
-            width: 800,
-            height: 450,
-            bottom: "-15%",
-            right: "-15%",
-            filter: "blur(50px)",
-            background: "radial-gradient(ellipse at center, rgba(59,130,246,0.04) 0%, transparent 55%)",
           }}
         />
 
@@ -243,7 +246,7 @@ export default function Contact() {
                 data-contact-link
                 target={link.href.startsWith("mailto") ? undefined : "_blank"}
                 rel={link.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
-                className={`group relative flex w-full max-w-md items-center gap-4 rounded-xl border border-transparent px-6 py-4 text-sm transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:translate-x-[5px] hover:-translate-y-px hover:border-[rgba(42,42,42,0.6)] hover:bg-[rgba(30,30,30,0.5)] hover:shadow-[0_4px_30px_rgba(59,130,246,0.05)] ${i === 1 ? "ml-1.5" : ""} ${i === 2 ? "ml-3" : ""}`}
+                className={`group relative flex w-full max-w-md items-center gap-3 rounded-xl border border-transparent px-4 py-4 text-sm transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:-translate-y-px hover:border-[rgba(42,42,42,0.6)] hover:bg-[rgba(30,30,30,0.5)] hover:shadow-[0_4px_30px_rgba(59,130,246,0.05)] md:hover:translate-x-[5px] sm:gap-4 sm:px-6 ${i === 1 ? "sm:ml-1.5" : ""} ${i === 2 ? "sm:ml-3" : ""}`}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[rgba(42,42,42,0.5)] bg-[var(--bg)] shadow-[inset_0_1px_2px_rgba(255,255,255,0.03)] transition-all duration-[350ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.08] group-hover:border-[rgba(59,130,246,0.25)] group-hover:bg-[rgba(30,30,30,0.8)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.1),0_0_8px_rgba(59,130,246,0.06),inset_0_1px_2px_rgba(255,255,255,0.05)]">
                   <Icon
@@ -252,11 +255,11 @@ export default function Contact() {
                   />
                 </span>
 
-                <div className="flex flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-3">
-                  <span className="font-medium text-[var(--text-primary)] transition-colors duration-[350ms] group-hover:text-[var(--accent)]">
+                <div className="min-w-0 flex flex-col items-start gap-0.5 text-left sm:flex-row sm:items-center sm:gap-3">
+                  <span className="shrink-0 font-medium text-[var(--text-primary)] transition-colors duration-[350ms] group-hover:text-[var(--accent)]">
                     {link.label}
                   </span>
-                  <span className="relative text-xs text-[var(--text-muted)] transition-colors duration-[350ms] group-hover:text-[var(--text-primary)] sm:text-sm">
+                  <span className="relative break-all text-xs text-[var(--text-muted)] transition-colors duration-[350ms] group-hover:text-[var(--text-primary)] sm:break-normal sm:text-sm">
                     {link.display}
                     <span className="absolute bottom-0 left-0 h-px w-0 bg-gradient-to-r from-[var(--accent)]/60 to-[#a78bfa]/40 transition-all duration-[400ms] ease-out group-hover:w-full" />
                   </span>
