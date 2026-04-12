@@ -18,6 +18,12 @@ export interface GraphNode {
   logo?: string;
   /** 0-based order within the story path (undefined = not on path) */
   storyOrder?: number;
+  /** Organization / school name (detail panel) */
+  company?: string;
+  /** Role or degree title, shown in accent color in the panel */
+  jobTitle?: string;
+  /** Short bullet lines for the detail panel */
+  highlights?: string[];
 }
 
 export type LinkKind = "parallel" | "progression" | "default";
@@ -61,4 +67,6 @@ export const DEFAULT_NARRATIVE = {
   title: "Career Progression",
   subtitle: "From IIT → Internships → Production Systems",
   body: "Backend-focused engineer building analytics platforms, agentic runtimes, and infrastructure. Click any node to explore.",
+  /** Uppercase eyebrow in the panel */
+  eyebrow: "FROM IIT → INTERNSHIPS → PRODUCTION SYSTEMS",
 };

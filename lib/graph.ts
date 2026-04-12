@@ -95,9 +95,11 @@ interface RoleEntry {
   id: string;
   label: string;
   company: string;
+  jobTitle: string;
   period: string;
   summary: string;
   impact: string;
+  highlights: string[];
   skills: string[];
   projects: string[];
   context?: string;
@@ -108,9 +110,16 @@ const IIT_NODE: GraphNode = {
   id: "role:iit",
   label: "IIT Kharagpur",
   type: "role",
+  company: "IIT Kharagpur",
+  jobTitle: "B.Sc. (Hons.) Physics",
   period: "2021 — 2025",
   summary: "B.Sc. (Hons.) Physics — built engineering skills through internships, open-source, and coursework in systems and algorithms.",
   impact: "Foundation in physics-driven problem solving and systems thinking.",
+  highlights: [
+    "Coursework and self-study in systems, algorithms, and physics-driven modeling.",
+    "Internships at OneLot and Ittiam while completing the degree.",
+    "Open-source and project work as the bridge into production engineering.",
+  ],
   techs: ["algorithms", "systems", "physics"],
   logo: "/logos/iitkgp-logo.jpg",
   storyOrder: 0,
@@ -121,11 +130,17 @@ const ROLES: RoleEntry[] = [
     id: "role:cimba",
     label: "SWE @ Cimba.ai",
     company: "Cimba.ai",
+    jobTitle: "Software Engineer",
     period: "May 2025 — Present",
     summary:
       "Led Usage Insights platform, shipped agentic runtimes, MCP OAuth, Redis caching, and re-architected LLM test infrastructure.",
     impact: "Built production analytics serving all agent metrics; 40% faster test cycles.",
-    skills: ["java", "postgresql", "redis", "react", "mcp", "llm apis"],
+    highlights: [
+      "Led the Usage Insights platform and analytics serving agent metrics across the product.",
+      "Shipped agentic runtimes, MCP OAuth flows, and Redis-backed caching layers.",
+      "Re-architected LLM test infrastructure for faster, more reliable release cycles.",
+    ],
+    skills: ["Java", "PostgreSQL", "Redis", "React", "MCP", "LLM APIs"],
     projects: ["usage-insights", "intentflow"],
     logo: "/logos/cimba-logo.png",
   },
@@ -133,10 +148,16 @@ const ROLES: RoleEntry[] = [
     id: "role:ittiam",
     label: "SWE Intern @ Ittiam",
     company: "Ittiam Systems",
+    jobTitle: "Software Engineer Intern",
     period: "Jun 2024 — Jul 2024",
     summary:
       "Built Kubernetes dev stack, distributed encode pipeline with KEDA autoscaling, and fixed A/V sync in video pipelines.",
     impact: "Autoscaling pipeline reduced idle compute by ~60%.",
+    highlights: [
+      "Kubernetes-based dev stack and distributed video encode pipelines.",
+      "KEDA autoscaling to cut idle compute while keeping throughput predictable.",
+      "A/V sync fixes and hardening across media processing paths.",
+    ],
     skills: ["kubernetes", "docker", "redis", "ffmpeg", "keda"],
     projects: ["distributed-encode"],
     context: "During IIT Kharagpur",
@@ -146,11 +167,17 @@ const ROLES: RoleEntry[] = [
     id: "role:onelot",
     label: "SWE Intern @ OneLot",
     company: "OneLot",
+    jobTitle: "Software Engineer Intern",
     period: "Dec 2023 — Apr 2024",
     summary:
       "Shipped Next.js server/client refactors, built forms and custom hooks, integrated Slack for team workflows.",
     impact: "Refactored core pages to SSR; shipped production forms end-to-end.",
-    skills: ["next.js", "react", "node"],
+    highlights: [
+      "Next.js SSR refactors and client/server boundary cleanup.",
+      "Production forms, custom hooks, and Slack integrations for team workflows.",
+      "End-to-end ownership from UI through API integration.",
+    ],
+    skills: ["Next.js", "React", "Node.js"],
     projects: [],
     context: "During IIT Kharagpur",
     logo: "/logos/onelot-logo.png",
@@ -162,9 +189,12 @@ function buildRoleNode(role: RoleEntry): GraphNode {
     id: role.id,
     label: role.label,
     type: "role",
+    company: role.company,
+    jobTitle: role.jobTitle,
     summary: role.summary,
     impact: role.impact,
     period: role.period,
+    highlights: role.highlights,
     techs: role.skills,
     context: role.context,
     logo: role.logo,
@@ -183,7 +213,6 @@ function addStoryEdges(links: GraphLink[]) {
       source: src,
       target: tgt,
       kind: isFromIIT ? "parallel" : "progression",
-      ...(isFromIIT ? { label: "During degree" } : {}),
     });
   }
 }

@@ -30,9 +30,9 @@ const CareerGraph = dynamic(() => import("../graph/CareerGraph"), {
 // ── Constants ───────────────────────────────────────────────────
 
 const LEGEND: { key: string; label: string; color: string }[] = [
-  { key: "role", label: "Experience", color: "#22d3ee" },
-  { key: "project", label: "Key Projects", color: "#3b82f6" },
-  { key: "skill", label: "Skills", color: "#475569" },
+  { key: "role", label: "Experience", color: "#3b82f6" },
+  { key: "project", label: "Key Projects", color: "#22d3ee" },
+  { key: "skill", label: "Skills", color: "#64748b" },
 ];
 
 const TYPE_LABELS: Record<NodeType, string> = {
@@ -52,7 +52,7 @@ const BADGE_META: Record<BadgeKind, { label: string; icon: string; color: string
 
 function GraphSkeleton() {
   return (
-    <div className="flex items-center justify-center py-24">
+    <div className="flex min-h-[480px] lg:min-h-[600px] items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
         <p className="text-xs text-[var(--text-muted)]">Loading graph&hellip;</p>
@@ -88,29 +88,125 @@ function NarrativePanel({ node, compact }: NarrativePanelProps) {
     return () => cancelAnimationFrame(raf);
   }, [node]);
 
+  const pillClass =
+    "rounded-md border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] font-medium text-[var(--text-muted)]";
+
   if (!node) {
     return (
       <div ref={panelRef} className="flex h-full flex-col justify-center">
-        <p className="text-[10px] uppercase tracking-widest text-cyan-400/70 mb-1.5">
-          {DEFAULT_NARRATIVE.subtitle}
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-400/90">
+          {DEFAULT_NARRATIVE.eyebrow}
         </p>
-        <h3 className={`font-semibold text-[var(--text-primary)] mb-3 ${compact ? "text-sm" : "text-lg"}`}>
+        <h3 className={`mb-3 font-semibold text-[var(--text-primary)] ${compact ? "text-sm" : "text-lg"}`}>
           {DEFAULT_NARRATIVE.title}
         </h3>
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-4">
+        <p className="mb-4 text-sm leading-relaxed text-[var(--text-muted)]">
           {DEFAULT_NARRATIVE.body}
         </p>
         <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)]/60">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-400/40 animate-pulse" />
+          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400/50" />
           Click a node to explore
         </div>
       </div>
     );
   }
 
+  const roleDetail =
+    node.type === "role" && Boolean(node.company || node.jobTitle);
+
+  if (roleDetail) {
+    return (
+      <div ref={panelRef} className="flex h-full flex-col justify-center">
+        <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-400/90">
+          {DEFAULT_NARRATIVE.eyebrow}
+        </p>
+        <h3
+          className={`mb-2 font-semibold text-[var(--text-primary)] ${compact ? "text-xs" : "text-base"}`}
+        >
+          {DEFAULT_NARRATIVE.title}
+        </h3>
+        {node.company && (
+          <p
+            className={`font-bold tracking-tight text-white ${compact ? "text-sm" : "text-lg"}`}
+          >
+            {node.company}
+          </p>
+        )}
+        {node.jobTitle && (
+          <p className="mt-1 text-sm font-medium text-cyan-400">{node.jobTitle}</p>
+        )}
+        {node.period && (
+          <p className="mt-2 text-sm text-[var(--text-muted)]">{node.period}</p>
+        )}
+        {node.context && (
+          <p className="mt-1 text-[10px] italic text-cyan-400/45">{node.context}</p>
+        )}
+
+        {node.badges && node.badges.length > 0 && (
+          <div className="mb-3 mt-3 flex flex-wrap gap-1.5">
+            {node.badges.map((b) => {
+              const m = BADGE_META[b];
+              return (
+                <span
+                  key={b}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                  style={{
+                    backgroundColor: `${m.color}12`,
+                    color: m.color,
+                    border: `1px solid ${m.color}28`,
+                  }}
+                >
+                  <span className="text-[8px]">{m.icon}</span>
+                  {m.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {node.highlights && node.highlights.length > 0 ? (
+          <ul className={`mt-3 list-disc space-y-2 pl-4 text-sm leading-relaxed text-[var(--text-muted)] ${compact ? "text-xs" : ""}`}>
+            {node.highlights.map((line, i) => (
+              <li key={`${i}-${line.slice(0, 24)}`}>{line}</li>
+            ))}
+          </ul>
+        ) : (
+          node.summary && (
+            <p className={`mt-3 text-sm leading-relaxed text-[var(--text-muted)] ${compact ? "text-xs" : ""}`}>
+              {node.summary}
+            </p>
+          )
+        )}
+
+        {node.impact && (
+          <p className={`mt-3 text-xs leading-relaxed ${compact ? "text-[10px]" : ""}`}>
+            <span className="font-medium text-cyan-400/90">Impact </span>
+            <span className="text-[var(--text-muted)]">{node.impact}</span>
+          </p>
+        )}
+
+        {node.techs && node.techs.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {node.techs.map((t) => (
+              <span key={t} className={pillClass}>
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {node.url && (
+          <p className="mt-4 text-[10px] text-[var(--text-muted)]/55">
+            Click again to view full page →
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div ref={panelRef} className="flex h-full flex-col justify-center">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-1.5">
+      <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
         <p className="text-[10px] uppercase tracking-widest text-[var(--accent)]">
           {TYPE_LABELS[node.type]}
         </p>
@@ -122,12 +218,12 @@ function NarrativePanel({ node, compact }: NarrativePanelProps) {
         )}
       </div>
 
-      <h3 className={`font-semibold text-[var(--text-primary)] leading-tight mb-2 ${compact ? "text-sm" : "text-base"}`}>
+      <h3 className={`mb-2 font-semibold leading-tight text-[var(--text-primary)] ${compact ? "text-sm" : "text-base"}`}>
         {node.label}
       </h3>
 
       {node.badges && node.badges.length > 0 && (
-        <div className="flex gap-1.5 mb-2.5">
+        <div className="mb-2.5 flex gap-1.5">
           {node.badges.map((b) => {
             const m = BADGE_META[b];
             return (
@@ -145,11 +241,11 @@ function NarrativePanel({ node, compact }: NarrativePanelProps) {
       )}
 
       {node.summary && (
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-2.5">{node.summary}</p>
+        <p className="mb-2.5 text-sm leading-relaxed text-[var(--text-muted)]">{node.summary}</p>
       )}
 
       {node.impact && (
-        <p className="text-xs leading-relaxed mb-2.5">
+        <p className="mb-2.5 text-xs leading-relaxed">
           <span className="font-medium text-[var(--accent)]">Impact </span>
           <span className="text-[var(--text-muted)]">{node.impact}</span>
         </p>
@@ -158,10 +254,7 @@ function NarrativePanel({ node, compact }: NarrativePanelProps) {
       {node.techs && node.techs.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {node.techs.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]"
-            >
+            <span key={t} className={pillClass}>
               {t}
             </span>
           ))}
@@ -283,16 +376,29 @@ export default function About({ overviewData }: AboutProps) {
   const measure = useCallback(() => {
     if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
+    const w = Math.round(rect.width);
+    if (w <= 0) return;
+    const measuredH = Math.round(rect.height);
+    const fallbackH = Math.min(Math.max(Math.round(w * 0.46), 520), 640);
     setDims({
-      width: Math.round(rect.width),
-      height: Math.min(Math.round(rect.width * 0.62), 540),
+      width: w,
+      height: Math.max(480, measuredH > 120 ? measuredH : fallbackH),
     });
   }, []);
 
   useEffect(() => {
     measure();
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    const el = canvasRef.current;
+    let ro: ResizeObserver | undefined;
+    if (el && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => measure());
+      ro.observe(el);
+    }
+    return () => {
+      window.removeEventListener("resize", measure);
+      ro?.disconnect();
+    };
   }, [measure]);
 
   const onSelect = useCallback((n: GraphNode | null) => setSelected(n), []);
@@ -324,8 +430,8 @@ export default function About({ overviewData }: AboutProps) {
 
   if (reduced) {
     return (
-      <section id="about" className="py-20 px-6">
-        <div className="mx-auto max-w-5xl">
+      <section id="about" className="py-20 px-4 sm:px-8">
+        <div className="mx-auto max-w-[1400px]">
           <h2 className="text-3xl font-bold tracking-tight text-white mb-4 text-gradient">About</h2>
           <p className="text-[var(--text-muted)] leading-relaxed max-w-2xl">
             Software engineer from IIT Kharagpur focused on backend systems,
@@ -341,42 +447,94 @@ export default function About({ overviewData }: AboutProps) {
   }
 
   return (
-    <section ref={sectionRef} id="about" className="py-20 px-6">
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div data-anim className="mb-6">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-gradient">
+    <section
+      ref={sectionRef}
+      id="about"
+      className="relative overflow-x-hidden py-24 sm:py-28"
+    >
+      {/* Section wash — full-bleed, low contrast */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[85%] bg-[radial-gradient(ellipse_80%_60%_at_50%_20%,rgba(56,189,248,0.07),transparent_65%)]"
+        aria-hidden
+      />
+
+      <div className="relative mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10">
+        <div data-anim className="mb-8 sm:mb-10">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl text-gradient">
             About
           </h2>
-          <p className="mt-2 text-sm text-[var(--text-muted)] max-w-lg">
-            How my roles, projects, and skills connect — an evolving system, not a timeline.
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
+            How my roles, projects, and skills connect — an evolving{" "}
+            <strong className="font-semibold text-white/90">system</strong>, not a timeline.
           </p>
         </div>
 
-        {/* Legend */}
-        <div data-anim className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-5">
+        <div
+          data-anim
+          className="mb-8 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs sm:text-sm text-[var(--text-muted)]"
+        >
           {LEGEND.map((item) => (
-            <div key={item.key} className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
-              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+            <div key={item.key} className="flex items-center gap-2">
+              <span
+                className="inline-block h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
               {item.label}
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Main layout */}
-        <div data-anim className="grid gap-5 lg:grid-cols-[1fr_280px]">
-          {/* Graph container */}
+      {/* Centerpiece: graph + glowing spine + panel share one card height (lg+) */}
+      <div
+        data-anim
+        className="relative mx-auto w-full max-w-[1600px] px-2 sm:px-4 lg:px-8 xl:px-10"
+      >
+        <div className="flex flex-col gap-6 lg:gap-0">
           <div
-            ref={canvasRef}
-            className="relative w-full rounded-xl border border-white/[0.06] bg-[#08090c]/60 overflow-hidden"
-            style={{ minHeight: 400 }}
-            onMouseMove={onMouseMove}
+            className={[
+              "flex min-h-0 flex-col overflow-hidden rounded-2xl border border-cyan-500/15 bg-[#030508]",
+              "shadow-[0_0_0_1px_rgba(34,211,238,0.08)_inset,0_0_80px_-20px_rgba(34,211,238,0.14)]",
+              "lg:flex-row lg:items-stretch lg:min-h-[min(640px,76vh)]",
+            ].join(" ")}
           >
-            {/* Parallax radial gradient — shifts subtly with cursor */}
             <div
-              className="pointer-events-none absolute inset-0 transition-transform duration-700 ease-out"
+              ref={canvasRef}
+              className="relative isolate min-h-[520px] w-full flex-1 overflow-hidden rounded-2xl border border-cyan-500/10 bg-[#030508] shadow-[0_0_0_1px_rgba(34,211,238,0.06)_inset,0_0_80px_-20px_rgba(34,211,238,0.12)] sm:min-h-[560px] lg:min-h-0 lg:rounded-none lg:border-0 lg:shadow-none"
+              onMouseMove={onMouseMove}
+            >
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.5]"
+              aria-hidden
               style={{
-                background: `radial-gradient(ellipse 60% 50% at ${30 + mousePos.x * 10}% ${45 + mousePos.y * 10}%, rgba(34,211,238,0.035) 0%, transparent 70%)`,
+                backgroundImage: [
+                  "radial-gradient(1.2px 1.2px at 6% 14%, rgba(255,255,255,0.4), transparent)",
+                  "radial-gradient(1px 1px at 18% 72%, rgba(147,197,253,0.5), transparent)",
+                  "radial-gradient(1.5px 1.5px at 34% 28%, rgba(255,255,255,0.25), transparent)",
+                  "radial-gradient(1px 1px at 52% 8%, rgba(165,243,252,0.45), transparent)",
+                  "radial-gradient(1px 1px at 71% 64%, rgba(255,255,255,0.3), transparent)",
+                  "radial-gradient(1.2px 1.2px at 88% 22%, rgba(125,211,252,0.4), transparent)",
+                  "radial-gradient(1px 1px at 92% 78%, rgba(255,255,255,0.22), transparent)",
+                  "radial-gradient(1px 1px at 12% 44%, rgba(186,230,253,0.35), transparent)",
+                  "radial-gradient(1.3px 1.3px at 45% 88%, rgba(255,255,255,0.28), transparent)",
+                  "radial-gradient(1px 1px at 63% 38%, rgba(103,232,249,0.4), transparent)",
+                  "radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,0.2), transparent)",
+                  "radial-gradient(1.2px 1.2px at 25% 91%, rgba(147,197,253,0.35), transparent)",
+                  "radial-gradient(1px 1px at 56% 52%, rgba(255,255,255,0.18), transparent)",
+                  "radial-gradient(1px 1px at 39% 6%, rgba(224,242,254,0.5), transparent)",
+                  "radial-gradient(1.4px 1.4px at 84% 48%, rgba(255,255,255,0.32), transparent)",
+                ].join(", "),
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-70"
+              aria-hidden
+              style={{
+                background: [
+                  `radial-gradient(ellipse 55% 40% at ${38 + mousePos.x * 8}% ${36 + mousePos.y * 10}%, rgba(56,189,248,0.14), transparent 70%)`,
+                  "radial-gradient(ellipse 80% 55% at 50% 120%, rgba(15,23,42,0.85), transparent 55%)",
+                  "radial-gradient(ellipse 50% 35% at 80% 20%, rgba(34,211,238,0.08), transparent 65%)",
+                ].join(", "),
               }}
             />
 
@@ -399,38 +557,48 @@ export default function About({ overviewData }: AboutProps) {
               containerRef={canvasRef}
             />
 
-            {/* Edge vignette */}
             <div
-              className="pointer-events-none absolute inset-0 rounded-xl"
+              className="pointer-events-none absolute inset-0 rounded-2xl lg:rounded-none"
               style={{
-                background: "radial-gradient(ellipse at center, transparent 45%, rgba(8,9,12,0.8) 100%)",
+                background:
+                  "radial-gradient(ellipse at center, transparent 45%, rgba(2,4,8,0.75) 100%)",
               }}
             />
-          </div>
 
-          {/* Narrative panel */}
-          <div className="hidden lg:flex flex-col rounded-xl border border-white/[0.06] bg-[#08090c]/60 px-5 py-5">
-            <NarrativePanel node={selected} />
-          </div>
-        </div>
+            <p className="pointer-events-none absolute bottom-4 left-1/2 z-10 hidden max-w-[90%] -translate-x-1/2 text-center text-[11px] text-[var(--text-muted)]/55 sm:block sm:text-xs">
+              Guided path highlighted — click any node for details
+            </p>
+            <p className="pointer-events-none absolute bottom-4 left-1/2 z-10 max-w-[90%] -translate-x-1/2 text-center text-[11px] text-[var(--text-muted)]/55 sm:hidden">
+              Tap a node for details
+            </p>
+            </div>
 
-        {/* Mobile panel */}
-        {selected && (
-          <div className="mt-4 rounded-xl border border-white/[0.06] bg-[#08090c]/60 px-5 py-4 lg:hidden">
-            <NarrativePanel node={selected} compact />
-          </div>
-        )}
+            {/* Full-height glowing spine between graph and detail panel */}
+            <div
+              className="pointer-events-none relative z-[2] hidden w-0 shrink-0 self-stretch overflow-visible lg:block"
+              aria-hidden
+            >
+              <div
+                className="absolute bottom-0 left-1/2 top-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-cyan-200/35 via-cyan-400/85 to-cyan-200/35 shadow-[0_0_8px_2px_rgba(34,211,238,0.38),0_0_20px_6px_rgba(56,189,248,0.14)]"
+              />
+            </div>
 
-        {/* Hint */}
-        <div data-anim className="mt-3 text-center">
-          <p className="text-[11px] text-[var(--text-muted)]/60 hidden sm:block">
-            Guided path highlighted — click any node for details
-          </p>
-          <p className="text-[11px] text-[var(--text-muted)]/60 sm:hidden">
-            Tap a node to see details
-          </p>
+            <aside className="hidden min-h-0 min-w-0 shrink-0 flex-col lg:flex lg:w-[min(320px,34%)] lg:max-w-[380px]">
+              <div className="flex h-full min-h-0 flex-col justify-center overflow-y-auto border-t border-white/10 bg-black/40 px-6 py-8 shadow-[inset_12px_0_48px_-28px_rgba(34,211,238,0.12)] backdrop-blur-xl lg:border-t-0 lg:px-7 lg:py-10">
+                <NarrativePanel node={selected} />
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
+
+      {selected && (
+        <div className="mx-auto mt-6 w-full max-w-[1600px] px-4 sm:px-6 lg:hidden">
+          <div className="rounded-2xl border border-white/10 border-l-2 border-l-cyan-400/55 bg-black/40 px-5 py-4 shadow-[0_0_40px_-14px_rgba(34,211,238,0.15)] backdrop-blur-xl">
+            <NarrativePanel node={selected} compact />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

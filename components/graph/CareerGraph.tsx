@@ -9,6 +9,7 @@ import type {
   NodeType,
   LinkKind,
 } from "@/lib/graph-types";
+import { STORY_NODE_IDS } from "@/lib/graph-types";
 
 // ── Visual tokens ───────────────────────────────────────────────
 
@@ -26,27 +27,71 @@ const GLOW_FILL: Record<NodeType, string> = {
   role: "rgba(34,211,238,0.18)",
 };
 
+/** IIT + internships + Cimba: timeline tiles (rounded squares). All other nodes are circles. */
+function isSquareCareerNode(n: GraphNode): boolean {
+  return n.type === "role" && STORY_NODE_IDS.has(n.id);
+}
+
+/**
+ * Half-height baseline; circles use r as radius; squares use this for box sizing.
+ */
 const RADIUS: Record<NodeType, number> = {
-  role: 16,
-  project: 10,
-  blog: 7,
-  skill: 4.5,
+  role: 26,
+  project: 16,
+  blog: 12,
+  skill: 8,
 };
 
 const ROOT_ID = "role:iit";
-const ROOT_R = 20;
+const ROOT_R = 32;
 
 function getR(n: GraphNode): number {
-  return n.id === ROOT_ID ? ROOT_R : RADIUS[n.type] ?? 5;
+  return n.id === ROOT_ID ? ROOT_R : RADIUS[n.type] ?? 8;
+}
+
+/** Rounded square (timeline tile) for the four story roles only. */
+function getSquareNodeBox(n: GraphNode): {
+  halfW: number;
+  halfH: number;
+  rx: number;
+} {
+  const r = getR(n);
+  const isRoot = n.id === ROOT_ID;
+  return {
+    halfW: isRoot ? r * 1.24 : r * 1.18,
+    halfH: r,
+    rx: Math.min(14, r * 0.2),
+  };
+}
+
+function clipIdForNode(id: string): string {
+  return `cg-clip-${id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function straightEdgePath(
+  sp: { x: number; y: number },
+  tp: { x: number; y: number },
+): string {
+  return `M ${sp.x} ${sp.y} L ${tp.x} ${tp.y}`;
+}
+
+/** Fit entire logo inside tile (no crop). `slice` was clipping wide marks. */
+const LOGO_PAR = "xMidYMid meet" as const;
+
+/** Inner padding for logo area inside square tiles */
+function squareLogoPad(halfW: number, halfH: number): number {
+  return Math.max(6, Math.min(halfW, halfH) * 0.12);
 }
 
 // ── Fixed layout ────────────────────────────────────────────────
 
+/** Wider horizontal spread for large / full-width graph canvases */
 const STORY_POS: Record<string, [number, number]> = {
-  "role:iit":    [0.11, 0.50],
-  "role:ittiam": [0.38, 0.27],
-  "role:onelot": [0.38, 0.73],
-  "role:cimba":  [0.66, 0.50],
+  "role:iit":    [0.085, 0.50],
+  "role:ittiam": [0.40, 0.26],
+  "role:onelot": [0.40, 0.74],
+  /** Nearer the graph/panel seam so edges read as meeting the glowing spine */
+  "role:cimba":  [0.88, 0.50],
 };
 
 function computeLayout(
@@ -106,7 +151,7 @@ function computeLayout(
             ? -Math.PI / 2
             : Math.PI / 2;
     const skSpread = Math.PI * 0.55;
-    const skDist = 55 + skills.length * 4;
+    const skDist = 96 + skills.length * 6;
     skills.forEach((sk, i) => {
       const f = skills.length === 1 ? 0.5 : i / (skills.length - 1);
       const a = skAngle - skSpread / 2 + skSpread * f;
@@ -118,7 +163,7 @@ function computeLayout(
 
     const prAngle = px > 0.55 ? Math.PI * 0.08 : Math.PI * 0.05;
     const prSpread = Math.PI * 0.35;
-    const prDist = 65;
+    const prDist = 118;
     projects.forEach((pr, i) => {
       const f = projects.length === 1 ? 0.5 : i / (projects.length - 1);
       const a = prAngle - prSpread / 2 + prSpread * f;
@@ -133,7 +178,7 @@ function computeLayout(
   for (const n of data.nodes) {
     if (!pos.has(n.id)) {
       pos.set(n.id, { x: w * 0.88, y: oy });
-      oy += 30;
+      oy += 48;
     }
   }
   return pos;
@@ -292,7 +337,7 @@ export default function CareerGraph({
         </filter>
       </defs>
 
-      {/* ── Edges ──────────────────────────────────────────── */}
+      {/* ── Edges (straight paths + soft glow) ─────────────── */}
 
       {data.links.map((link) => {
         const src = typeof link.source === "string" ? link.source : "";
@@ -306,6 +351,8 @@ export default function CareerGraph({
         const isHL =
           connected && connected.has(src) && connected.has(tgt);
 
+        const d = straightEdgePath(sp, tp);
+
         const sIdx = order.get(src) ?? 0;
         const tIdx = order.get(tgt) ?? 0;
         const edgeDelay = 0.3 + Math.max(sIdx, tIdx) * 0.09 + 0.5;
@@ -316,73 +363,74 @@ export default function CareerGraph({
             : 0.04
           : isSL
             ? 1
-            : 0.15;
+            : 0.055;
 
         const stroke =
           isHL
-            ? "rgba(59,130,246,0.45)"
+            ? "rgba(56,189,248,0.95)"
             : kind === "progression" && isSL
-              ? "rgba(34,211,238,0.42)"
+              ? "rgba(34,211,238,0.72)"
               : isSL
-                ? "rgba(34,211,238,0.22)"
+                ? "rgba(34,211,238,0.38)"
                 : "rgba(148,163,184,0.06)";
 
         const sw =
           kind === "progression" && isSL
             ? isHL
-              ? 2
-              : 1.8
+              ? 2.4
+              : 2
             : isHL
-              ? 1.2
+              ? 2
               : isSL
-                ? 1.3
+                ? 1.6
                 : 0.4;
 
         const isDashed = kind === "parallel" && isSL;
+        const dash = isDashed ? "7 11" : undefined;
+        const glowExtra = isSL ? (isHL ? 14 : 11) : 5;
+        const glowOpacity =
+          edgeOpacity * (isSL ? (isHL ? 0.55 : 0.4) : 0.25);
 
-        if (isDashed) {
-          return (
-            <motion.line
-              key={`e-${src}-${tgt}`}
-              x1={sp.x}
-              y1={sp.y}
-              x2={tp.x}
-              y2={tp.y}
-              stroke={stroke}
-              strokeWidth={sw}
-              strokeDasharray="5 5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: edgeOpacity }}
-              transition={{
-                delay: edgeDelay,
-                duration: 0.5,
-                ease: "easeOut",
-              }}
-            />
-          );
-        }
+        const pathTransition = {
+          pathLength: {
+            delay: edgeDelay,
+            duration: 0.55,
+            ease: "easeOut" as const,
+          },
+          opacity: {
+            delay: edgeDelay,
+            duration: 0.35,
+          },
+        };
 
         return (
-          <motion.path
-            key={`e-${src}-${tgt}`}
-            d={`M ${sp.x} ${sp.y} L ${tp.x} ${tp.y}`}
-            stroke={stroke}
-            strokeWidth={sw}
-            fill="none"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: edgeOpacity }}
-            transition={{
-              pathLength: {
-                delay: edgeDelay,
-                duration: 0.45,
-                ease: "easeOut",
-              },
-              opacity: {
-                delay: edgeDelay,
-                duration: 0.3,
-              },
-            }}
-          />
+          <g key={`e-${src}-${tgt}`}>
+            <motion.path
+              d={d}
+              stroke={stroke}
+              strokeWidth={sw + glowExtra}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              strokeDasharray={dash}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: glowOpacity }}
+              transition={pathTransition}
+              style={{ filter: isSL ? "blur(5px)" : "blur(2px)" }}
+            />
+            <motion.path
+              d={d}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+              strokeDasharray={dash}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: edgeOpacity }}
+              transition={pathTransition}
+            />
+          </g>
         );
       })}
 
@@ -444,13 +492,13 @@ export default function CareerGraph({
           );
           const kind = link?.kind ?? "default";
           const speed = kind === "progression" ? 2.2 : 3.2;
-          const dotR = kind === "progression" ? 2 : 1.4;
+          const dotR = kind === "progression" ? 2.8 : 2.1;
 
           return (
             <motion.circle
               key={`dot-${src}-${tgt}`}
               r={dotR}
-              fill="rgba(34,211,238,0.8)"
+              fill="rgba(147,197,253,0.95)"
               filter="url(#dot-glow)"
               initial={{ opacity: 0 }}
               animate={{
@@ -484,8 +532,15 @@ export default function CareerGraph({
         if (!pos) return null;
 
         const r = getR(node);
+        const square = isSquareCareerNode(node);
+        const box = square ? getSquareNodeBox(node) : null;
+        const halfW = box?.halfW ?? 0;
+        const halfH = box?.halfH ?? 0;
+        const rx = box?.rx ?? 0;
+
         const idx = order.get(node.id) ?? 0;
-        const isStory = storyNodeIds?.has(node.id);
+        /** About: only IIT + internships + Cimba stay crisp; rest stay faded. */
+        const inPrimary = STORY_NODE_IDS.has(node.id);
         const isRoot = node.id === ROOT_ID;
         const isActive =
           hoveredId === node.id || focusedId === node.id;
@@ -493,25 +548,39 @@ export default function CareerGraph({
         const nodeOpacity = connected
           ? connected.has(node.id)
             ? 1
-            : 0.08
-          : isStory
+            : 0.06
+          : inPrimary
             ? 1
             : node.type === "project"
-              ? 0.55
-              : 0.18;
+              ? 0.15
+              : 0.09;
 
         const showLabel =
-          node.type === "role" ||
-          node.type === "project" ||
-          isActive;
+          inPrimary ||
+          ((node.type === "project" ||
+            node.type === "skill" ||
+            node.type === "blog") &&
+            isActive);
 
-        // Deterministic float params
         const h = hashId(node.id);
-        const floatAx = 1 + ((h & 0xff) / 255) * 1;
-        const floatAy = 1 + (((h >> 8) & 0xff) / 255) * 1;
-        const floatDur = 4 + ((h >> 16) & 0xff) / 255 * 2;
+        const floatAmp = inPrimary ? 1 : 2.6;
+        const floatAx =
+          floatAmp * (1 + ((h & 0xff) / 255) * 1);
+        const floatAy =
+          floatAmp * (1 + (((h >> 8) & 0xff) / 255) * 1);
+        const floatDur = inPrimary
+          ? 4 + ((h >> 16) & 0xff) / 255 * 2
+          : 2.8 + ((h >> 16) & 0xff) / 255 * 1.8;
 
         const entryDelay = 0.3 + idx * 0.09;
+        const labelY = square ? halfH + 22 : r + 22;
+        const logoPad = square ? squareLogoPad(halfW, halfH) : 0;
+        const logoIw = square ? 2 * halfW - 2 * logoPad : r * 1.5;
+        const logoIh = square ? 2 * halfH - 2 * logoPad : r * 1.5;
+        const logoIx = square ? -halfW + logoPad : -r * 0.75;
+        const logoIy = square ? -halfH + logoPad : -r * 0.75;
+
+        const activeScale = isActive ? 1.08 : 1;
 
         return (
           <motion.g
@@ -532,7 +601,7 @@ export default function CareerGraph({
                       pos.y + floatAy,
                       pos.y,
                     ],
-                    scale: isActive ? 1.08 : 1,
+                    scale: 1,
                     opacity: nodeOpacity,
                   }
                 : {
@@ -555,11 +624,7 @@ export default function CareerGraph({
                       repeat: Infinity,
                       ease: "easeInOut",
                     },
-                    scale: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    },
+                    scale: { duration: 0.4, ease: "easeOut" },
                     opacity: { duration: 0.3 },
                   }
                 : {
@@ -568,91 +633,231 @@ export default function CareerGraph({
                     ease: "easeOut",
                   }
             }
-            whileHover={phase === "idle" ? { scale: 1.1 } : undefined}
-            drag={phase === "idle"}
-            dragConstraints={{
-              left: -40,
-              right: 40,
-              top: -40,
-              bottom: 40,
-            }}
-            dragElastic={0.15}
-            dragMomentum={false}
-            dragSnapToOrigin
             style={{ cursor: "pointer" }}
             onMouseEnter={() => handleNodeEnter(node)}
             onMouseLeave={handleNodeLeave}
             onClick={(e: React.MouseEvent) => handleNodeClick(node, e)}
           >
-            {/* Glow circle */}
-            {(isStory || isActive) && (
-              <motion.circle
-                r={r + (isActive ? 6 : isRoot ? 5 : 3)}
-                fill={
-                  isRoot ? "rgba(34,211,238,0.2)" : GLOW_FILL[node.type]
-                }
-                animate={{
-                  opacity: isActive
-                    ? [0.4, 0.6, 0.4]
-                    : isRoot
-                      ? [0.25, 0.35, 0.25]
-                      : 0.25,
-                }}
-                transition={
-                  isActive || isRoot
-                    ? {
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }
-                    : { duration: 0.3 }
-                }
-              />
+            <g
+              style={{
+                transform: `scale(${activeScale})`,
+                transformOrigin: "0 0",
+                transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              }}
+            >
+              {square ? (
+              <>
+                <defs>
+                  {node.logo && (
+                    <clipPath id={clipIdForNode(node.id)}>
+                      <rect
+                        x={logoIx}
+                        y={logoIy}
+                        width={logoIw}
+                        height={logoIh}
+                        rx={Math.max(3, rx - logoPad * 0.35)}
+                      />
+                    </clipPath>
+                  )}
+                </defs>
+
+                {(inPrimary || isActive) && (
+                  <motion.rect
+                    x={-halfW - (isActive ? 10 : isRoot ? 9 : 6)}
+                    y={-halfH - (isActive ? 10 : isRoot ? 9 : 6)}
+                    width={2 * halfW + (isActive ? 20 : isRoot ? 18 : 12)}
+                    height={2 * halfH + (isActive ? 20 : isRoot ? 18 : 12)}
+                    rx={rx + (isActive ? 5 : 4)}
+                    fill={
+                      isRoot
+                        ? "rgba(34,211,238,0.2)"
+                        : GLOW_FILL[node.type]
+                    }
+                    animate={{
+                      opacity: isActive
+                        ? [0.4, 0.6, 0.4]
+                        : isRoot
+                          ? [0.25, 0.35, 0.25]
+                          : 0.25,
+                    }}
+                    transition={
+                      isActive || isRoot
+                        ? {
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }
+                        : { duration: 0.3 }
+                    }
+                  />
+                )}
+
+                <rect
+                  x={-halfW}
+                  y={-halfH}
+                  width={2 * halfW}
+                  height={2 * halfH}
+                  rx={rx}
+                  fill={
+                    node.logo ? "rgba(8,10,16,0.92)" : COLOR[node.type]
+                  }
+                />
+
+                {node.logo && (
+                  <image
+                    href={node.logo}
+                    x={logoIx}
+                    y={logoIy}
+                    width={logoIw}
+                    height={logoIh}
+                    preserveAspectRatio={LOGO_PAR}
+                    filter="url(#desat)"
+                    clipPath={`url(#${clipIdForNode(node.id)})`}
+                    style={{ pointerEvents: "none" }}
+                  />
+                )}
+
+                <rect
+                  x={-halfW}
+                  y={-halfH}
+                  width={2 * halfW}
+                  height={2 * halfH}
+                  rx={rx}
+                  fill="none"
+                  stroke={
+                    isActive
+                      ? "rgba(103,232,249,0.95)"
+                      : COLOR[node.type]
+                  }
+                  strokeWidth={
+                    node.logo
+                      ? isRoot
+                        ? 2.6
+                        : inPrimary
+                          ? isActive
+                            ? 2.4
+                            : 2
+                          : 0.85
+                      : isActive
+                        ? 1.6
+                        : 0.5
+                  }
+                  opacity={
+                    node.logo
+                      ? isActive
+                        ? 1
+                        : inPrimary
+                          ? 0.88
+                          : 0.5
+                      : isActive
+                        ? 0.9
+                        : 0.35
+                  }
+                  style={
+                    isActive || (inPrimary && node.logo)
+                      ? {
+                          filter:
+                            isActive
+                              ? "drop-shadow(0 0 10px rgba(34,211,238,0.65)) drop-shadow(0 0 22px rgba(56,189,248,0.35))"
+                              : "drop-shadow(0 0 6px rgba(34,211,238,0.35))",
+                        }
+                      : undefined
+                  }
+                />
+
+                {!node.logo && isActive && (
+                  <rect
+                    x={-halfW * 0.45}
+                    y={-halfH * 0.35}
+                    width={halfW * 0.9}
+                    height={halfH * 0.7}
+                    rx={rx * 0.4}
+                    fill="rgba(255,255,255,0.18)"
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <defs>
+                  {node.logo && (
+                    <clipPath id={clipIdForNode(node.id)}>
+                      <circle r={r * 0.75} />
+                    </clipPath>
+                  )}
+                </defs>
+
+                {(inPrimary || isActive) && (
+                  <motion.circle
+                    r={r + (isActive ? 9 : isRoot ? 8 : 5)}
+                    fill={
+                      isRoot
+                        ? "rgba(34,211,238,0.2)"
+                        : GLOW_FILL[node.type]
+                    }
+                    animate={{
+                      opacity: isActive
+                        ? [0.4, 0.6, 0.4]
+                        : isRoot
+                          ? [0.25, 0.35, 0.25]
+                          : 0.25,
+                    }}
+                    transition={
+                      isActive || isRoot
+                        ? {
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }
+                        : { duration: 0.3 }
+                    }
+                  />
+                )}
+
+                <circle
+                  r={r}
+                  fill={
+                    node.logo ? "rgba(8,10,16,0.92)" : COLOR[node.type]
+                  }
+                />
+
+                {node.logo && (
+                  <image
+                    href={node.logo}
+                    x={logoIx}
+                    y={logoIy}
+                    width={logoIw}
+                    height={logoIh}
+                    preserveAspectRatio={LOGO_PAR}
+                    filter="url(#desat)"
+                    clipPath={`url(#${clipIdForNode(node.id)})`}
+                    style={{ pointerEvents: "none" }}
+                  />
+                )}
+
+                {node.logo && (
+                  <circle
+                    r={r}
+                    fill="none"
+                    stroke={COLOR[node.type]}
+                    strokeWidth={
+                      isRoot ? 2.2 : inPrimary ? 1.35 : 0.85
+                    }
+                    opacity={0.6}
+                  />
+                )}
+
+                {!node.logo && isActive && (
+                  <circle
+                    r={r * 0.3}
+                    fill="rgba(255,255,255,0.4)"
+                  />
+                )}
+              </>
             )}
-
-            {/* Core circle */}
-            <circle
-              r={r}
-              fill={node.logo ? "rgba(8,10,16,0.92)" : COLOR[node.type]}
-            />
-
-            {/* Logo (circular crop via CSS clip-path) */}
-            {node.logo && (
-              <image
-                href={node.logo}
-                x={-r * 0.75}
-                y={-r * 0.75}
-                width={r * 1.5}
-                height={r * 1.5}
-                preserveAspectRatio="xMidYMid slice"
-                filter="url(#desat)"
-                style={{
-                  clipPath: "circle(50% at 50% 50%)",
-                  pointerEvents: "none",
-                }}
-              />
-            )}
-
-            {/* Accent ring for logo nodes */}
-            {node.logo && (
-              <circle
-                r={r}
-                fill="none"
-                stroke={COLOR[node.type]}
-                strokeWidth={isRoot ? 1.6 : isStory ? 1 : 0.6}
-                opacity={0.6}
-              />
-            )}
-
-            {/* Inner dot for non-logo active nodes */}
-            {!node.logo && isActive && (
-              <circle r={r * 0.3} fill="rgba(255,255,255,0.4)" />
-            )}
-
-            {/* Label */}
+            </g>
             {showLabel && (
               <text
-                y={r + 14}
+                y={labelY}
                 textAnchor="middle"
                 fill={
                   nodeOpacity > 0.4
@@ -660,9 +865,9 @@ export default function CareerGraph({
                     : "rgba(120,120,120,0.6)"
                 }
                 fontSize={
-                  isRoot ? 12 : node.type === "role" ? 11 : 10
+                  isRoot ? 15 : node.type === "role" ? 13 : 11.5
                 }
-                fontWeight={isStory || isActive ? 600 : 400}
+                fontWeight={inPrimary || isActive ? 600 : 400}
                 fontFamily="Inter, system-ui, sans-serif"
                 style={{ pointerEvents: "none" }}
               >
