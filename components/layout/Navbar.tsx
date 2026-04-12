@@ -184,26 +184,20 @@ export default function Navbar() {
           </ul>
 
           <div
-            className="ml-3 flex items-center gap-2 border-l border-white/[0.08] pl-4"
+            className="ml-3 border-l border-white/[0.08] pl-4"
             data-nav-animate
           >
             <a
               href={RESUME_HREF}
               download={RESUME_DOWNLOAD_NAME}
-              className="rounded-lg px-3 py-2 text-[13px] font-medium text-[var(--text-muted)] transition-all duration-200 hover:bg-white/[0.05] hover:text-[var(--text-primary)] hover:shadow-[0_0_18px_-3px_rgba(59,130,246,0.2)]"
+              className="group relative inline-flex overflow-hidden rounded-full bg-gradient-to-r from-indigo-500/90 via-blue-500 to-violet-500/95 px-4 py-2 text-[13px] font-semibold text-white shadow-[0_0_24px_-4px_rgba(99,102,241,0.55)] transition-[transform,box-shadow] duration-200 hover:scale-[1.02] hover:shadow-[0_0_32px_-2px_rgba(99,102,241,0.65)] active:scale-[0.98]"
             >
-              Resume
-            </a>
-            <Link
-              href="/#contact"
-              className="group relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500/90 via-blue-500 to-violet-500/95 px-4 py-2 text-[13px] font-semibold text-white shadow-[0_0_24px_-4px_rgba(99,102,241,0.55)] transition-[transform,box-shadow] duration-200 hover:scale-[1.02] hover:shadow-[0_0_32px_-2px_rgba(99,102,241,0.65)] active:scale-[0.98]"
-            >
-              <span className="relative z-10">Let&apos;s Talk</span>
+              <span className="relative z-10">Resume</span>
               <span
                 className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/0 via-white/15 to-white/25 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                 aria-hidden
               />
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -273,22 +267,15 @@ export default function Navbar() {
                 );
               })}
             </ul>
-            <div className="mt-8 flex flex-col gap-3 border-t border-white/[0.08] pt-8">
+            <div className="mt-8 border-t border-white/[0.08] pt-8">
               <a
                 href={RESUME_HREF}
                 download={RESUME_DOWNLOAD_NAME}
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-xl border border-white/[0.12] py-3.5 text-center text-base font-medium text-[var(--text-primary)] transition-colors hover:border-indigo-400/40 hover:bg-white/[0.04]"
+                className="block rounded-xl bg-gradient-to-r from-indigo-500 via-blue-500 to-violet-500 py-3.5 text-center text-base font-semibold text-white shadow-[0_0_28px_-4px_rgba(99,102,241,0.5)]"
               >
-                Resume
+                Download resume
               </a>
-              <Link
-                href="/#contact"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-xl bg-gradient-to-r from-indigo-500 via-blue-500 to-violet-500 py-3.5 text-center text-base font-semibold text-white shadow-[0_0_28px_-4px_rgba(99,102,241,0.5)]"
-              >
-                Let&apos;s Talk
-              </Link>
             </div>
           </div>
         </div>
