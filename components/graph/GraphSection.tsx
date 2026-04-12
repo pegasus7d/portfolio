@@ -11,7 +11,8 @@ import {
 import dynamic from "next/dynamic";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import type { GraphData, NodeType } from "@/lib/graph";
+import GraphErrorBoundary from "./GraphErrorBoundary";
+import type { GraphData, NodeType } from "@/lib/graph-types";
 
 const KnowledgeGraph = dynamic(() => import("./KnowledgeGraph"), {
   ssr: false,
@@ -137,13 +138,15 @@ export default function GraphSection({ data }: GraphSectionProps) {
           className="relative w-full rounded-xl border border-white/5 bg-black/20 overflow-hidden"
           style={{ minHeight: 320 }}
         >
-          {dimensions.width > 0 && (
-            <KnowledgeGraph
-              data={stableData}
-              width={dimensions.width}
-              height={dimensions.height}
-            />
-          )}
+          <GraphErrorBoundary>
+            {dimensions.width > 0 && (
+              <KnowledgeGraph
+                data={stableData}
+                width={dimensions.width}
+                height={dimensions.height}
+              />
+            )}
+          </GraphErrorBoundary>
 
           {/* Vignette overlay so edges don't end abruptly */}
           <div
