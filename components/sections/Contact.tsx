@@ -38,6 +38,7 @@ const LINKS: ContactLink[] = [
 
 export default function Contact() {
   const sectionInnerRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
   useLayoutEffect(() => {
@@ -49,14 +50,9 @@ export default function Contact() {
     const links = sectionInnerRef.current.querySelectorAll("[data-contact-link]");
 
     const all = [heading, subtitle, divider, ...Array.from(links)].filter(Boolean);
-    gsap.set(all, { opacity: 0, y: 20 });
+    gsap.set(all, { opacity: 0, y: 24 });
 
-    const tween = gsap.to(all, {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      stagger: 0.08,
-      ease: "power3.out",
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionInnerRef.current,
         start: "top 85%",
@@ -64,8 +60,28 @@ export default function Contact() {
       },
     });
 
+    tl.to(all, {
+      opacity: 1,
+      y: 0,
+      duration: 0.65,
+      stagger: 0.09,
+      ease: "power3.out",
+    });
+
+    // Slow breathing glow animation
+    if (glowRef.current) {
+      gsap.to(glowRef.current, {
+        scale: 1.08,
+        opacity: 0.7,
+        duration: 4,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+
     return () => {
-      tween.kill();
+      tl.kill();
       ScrollTrigger.getAll()
         .filter((st) => st.trigger === sectionInnerRef.current)
         .forEach((st) => st.kill());
@@ -75,12 +91,13 @@ export default function Contact() {
   return (
     <SectionWrapper id="contact">
       <div ref={sectionInnerRef} className="relative text-center">
-        {/* Radial glow behind heading */}
+        {/* Animated radial glow */}
         <div
-          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 w-[480px] h-[280px]"
+          ref={glowRef}
+          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[520px] h-[320px] will-change-transform"
           aria-hidden="true"
           style={{
-            background: "radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, rgba(167,139,250,0.04) 40%, transparent 70%)",
+            background: "radial-gradient(ellipse at center, rgba(59,130,246,0.09) 0%, rgba(167,139,250,0.05) 40%, transparent 70%)",
           }}
         />
 
@@ -118,13 +135,13 @@ export default function Contact() {
                 data-contact-link
                 target={link.href.startsWith("mailto") ? undefined : "_blank"}
                 rel={link.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
-                className="group relative flex w-full max-w-md items-center gap-4 rounded-xl border border-transparent px-6 py-4 text-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border)] hover:bg-[var(--surface)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.06)]"
+                className="group relative flex w-full max-w-md items-center gap-4 rounded-xl border border-transparent px-6 py-4 text-sm transition-all duration-300 hover:translate-x-1 hover:-translate-y-px hover:border-[var(--border)] hover:bg-[var(--surface)] hover:shadow-[0_4px_24px_rgba(59,130,246,0.06)]"
               >
-                {/* Icon */}
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 group-hover:border-[var(--accent)]/30 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.12)]">
+                {/* Icon container */}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--bg)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)] transition-all duration-300 group-hover:border-[rgba(59,130,246,0.25)] group-hover:bg-[var(--surface)] group-hover:shadow-[0_0_12px_rgba(59,130,246,0.1),inset_0_1px_1px_rgba(255,255,255,0.05)]">
                   <Icon
                     size={16}
-                    className="text-[var(--text-muted)] transition-all duration-300 group-hover:text-[var(--accent)] group-hover:brightness-125"
+                    className="text-[var(--text-muted)] transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110"
                   />
                 </span>
 
@@ -135,13 +152,12 @@ export default function Contact() {
                   </span>
                   <span className="relative text-xs text-[var(--text-muted)] transition-colors duration-300 group-hover:text-[var(--text-primary)] sm:text-sm">
                     {link.display}
-                    {/* Animated underline */}
-                    <span className="absolute bottom-0 left-0 h-px w-0 bg-[var(--accent)] transition-all duration-300 group-hover:w-full" />
+                    <span className="absolute bottom-0 left-0 h-px w-0 bg-[var(--accent)] transition-all duration-300 ease-out group-hover:w-full" />
                   </span>
                 </div>
 
                 {/* Arrow */}
-                <span className="ml-auto text-[var(--text-muted)] opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0.5" aria-hidden="true">
+                <span className="ml-auto text-[var(--text-muted)] opacity-0 -translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0" aria-hidden="true">
                   &rarr;
                 </span>
               </a>

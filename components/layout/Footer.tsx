@@ -23,22 +23,36 @@ const SOCIAL_LINKS: { label: string; href: string; icon: ComponentType<SVGProps<
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-[var(--border)] bg-[var(--bg)]">
-      {/* Gradient glow top border */}
+    <footer className="relative bg-[var(--bg)]">
+      {/* Glow bleed from Contact section */}
+      <div
+        className="pointer-events-none absolute inset-x-0 -top-16 h-24"
+        aria-hidden="true"
+        style={{
+          background: "radial-gradient(ellipse 50% 100% at 50% 0%, rgba(59,130,246,0.04) 0%, transparent 80%)",
+        }}
+      />
+
+      {/* Gradient top border */}
       <div
         className="absolute inset-x-0 top-0 h-px"
         aria-hidden="true"
         style={{
-          background: "linear-gradient(90deg, transparent 10%, rgba(59,130,246,0.2) 40%, rgba(167,139,250,0.15) 60%, transparent 90%)",
+          background: "linear-gradient(90deg, transparent 10%, rgba(59,130,246,0.18) 40%, rgba(167,139,250,0.12) 60%, transparent 90%)",
         }}
       />
 
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-5 px-6 py-10 sm:flex-row sm:justify-between">
         {/* Logo / copyright */}
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-[var(--text-primary)] transition-all duration-300 hover:text-[var(--accent)] hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.3)]">
-            DB
-          </span>
+          <Link
+            href="/"
+            className="group text-sm font-semibold text-[var(--text-primary)] transition-all duration-300 hover:text-[var(--accent)]"
+          >
+            <span className="inline-block transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.35)] group-hover:scale-105">
+              DB
+            </span>
+          </Link>
           <span className="text-xs text-[var(--border)]">/</span>
           <p className="text-xs text-[var(--text-muted)]">
             &copy; {new Date().getFullYear()} Debayan Biswas
@@ -56,13 +70,15 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
-                  className="group flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[var(--text-muted)] transition-all duration-300 hover:-translate-y-px hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
+                  className="group flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--text-muted)] transition-all duration-300 hover:-translate-y-px hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
                 >
                   <Icon
                     size={15}
-                    className="transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.3)]"
+                    className="transition-all duration-300 group-hover:text-[var(--accent)] group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(59,130,246,0.3)]"
                   />
-                  <span className="hidden text-xs sm:inline">{link.label}</span>
+                  <span className="hidden text-xs transition-colors duration-300 group-hover:text-[var(--text-primary)] sm:inline">
+                    {link.label}
+                  </span>
                 </Link>
               </li>
             );
