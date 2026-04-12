@@ -13,15 +13,17 @@ export interface ScrollTriggerOptions {
 }
 
 const DEFAULT_FROM: gsap.TweenVars = {
-  y: 40,
+  y: 50,
   opacity: 0,
+  filter: "blur(4px)",
 };
 
 const DEFAULT_TO: gsap.TweenVars = {
   y: 0,
   opacity: 1,
-  duration: DEFAULTS.duration,
-  ease: DEFAULTS.ease,
+  filter: "blur(0px)",
+  duration: 0.8,
+  ease: "power3.out",
 };
 
 /**

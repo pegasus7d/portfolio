@@ -14,7 +14,6 @@ export default function ParticleBg() {
     }).then(() => setReady(true));
   }, []);
 
-  // Pause particles when tab is hidden to save CPU
   const handleLoaded = useCallback(async (container?: Container) => {
     if (!container) return;
 
@@ -27,7 +26,6 @@ export default function ParticleBg() {
     };
 
     document.addEventListener("visibilitychange", onVisibility);
-    // Store for cleanup in unmount via container destroy
   }, []);
 
   const options: ISourceOptions = useMemo(
@@ -36,28 +34,39 @@ export default function ParticleBg() {
       fpsLimit: 60,
       particles: {
         number: {
-          value: 50,
+          value: 60,
           density: { enable: true, width: 1920, height: 1080 },
         },
         color: { value: "#3b82f6" },
         opacity: {
-          value: { min: 0.1, max: 0.3 },
+          value: { min: 0.15, max: 0.5 },
+          animation: {
+            enable: true,
+            speed: 0.3,
+            minimumValue: 0.1,
+            sync: false,
+          },
         },
         size: {
           value: { min: 1, max: 3 },
         },
         move: {
           enable: true,
-          speed: 0.6,
+          speed: 0.4,
           direction: "none",
           outModes: { default: "out" },
         },
         links: {
           enable: true,
-          distance: 150,
+          distance: 160,
           color: "#3b82f6",
-          opacity: 0.08,
+          opacity: 0.12,
           width: 1,
+        },
+        shadow: {
+          enable: true,
+          blur: 8,
+          color: "#3b82f6",
         },
       },
       interactivity: {
@@ -65,7 +74,7 @@ export default function ParticleBg() {
           onHover: { enable: true, mode: "grab" },
         },
         modes: {
-          grab: { distance: 140, links: { opacity: 0.2 } },
+          grab: { distance: 160, links: { opacity: 0.35 } },
         },
       },
       detectRetina: true,

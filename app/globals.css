@@ -9,6 +9,7 @@
   --text-muted: #888888;
   --accent: #3b82f6;
   --accent-glow: rgba(59, 130, 246, 0.12);
+  --accent-bright: rgba(59, 130, 246, 0.35);
 }
 
 @theme inline {
@@ -62,7 +63,6 @@ body {
   top: 0;
 }
 
-/* Ensure touch targets are at least 44px */
 @media (pointer: coarse) {
   a, button {
     min-height: 44px;
@@ -92,7 +92,164 @@ body {
   background: var(--text-muted);
 }
 
-/* Prose styling for rendered markdown */
+/* ── Ambient background layer ───────────────────────────────── */
+.ambient-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(167, 139, 250, 0.04) 0%, transparent 70%);
+}
+
+/* ── Floating gradient blobs ────────────────────────────────── */
+.gradient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+  pointer-events: none;
+  will-change: transform;
+  animation: blob-drift 20s ease-in-out infinite alternate;
+}
+
+.gradient-blob--blue {
+  width: 400px;
+  height: 400px;
+  background: var(--accent);
+  top: 10%;
+  left: -5%;
+}
+
+.gradient-blob--purple {
+  width: 320px;
+  height: 320px;
+  background: #a78bfa;
+  bottom: 20%;
+  right: -5%;
+  animation-delay: -10s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes blob-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -20px) scale(1.05); }
+  100% { transform: translate(-20px, 15px) scale(0.97); }
+}
+
+/* ── Premium button styles ──────────────────────────────────── */
+.btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  background: var(--accent);
+  border-radius: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-primary:hover {
+  box-shadow:
+    0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 40px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary:hover {
+  background: var(--surface);
+  border-color: var(--text-muted);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ── Card hover glow ────────────────────────────────────────── */
+.card-glow {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s;
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(59, 130, 246, 0.06),
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.card-glow:hover {
+  border-color: var(--accent) !important;
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 30px rgba(59, 130, 246, 0.08),
+    0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+.card-glow:hover::after {
+  opacity: 1;
+}
+
+/* ── Gradient text utility ──────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #ededed 0%, #3b82f6 60%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Cursor-follow spotlight (used in Hero) ─────────────────── */
+.cursor-spotlight {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.4s;
+  z-index: 0;
+}
+
+/* ── Prose styling for rendered markdown ────────────────────── */
 .prose-custom {
   line-height: 1.75;
   color: var(--text-primary);
@@ -190,4 +347,10 @@ body {
 /* ── Knowledge Graph ────────────────────────────────────────── */
 #graph canvas {
   border-radius: 0.75rem;
+}
+
+/* ── Pulse keyframe for active graph nodes ──────────────────── */
+@keyframes node-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.55; }
 }

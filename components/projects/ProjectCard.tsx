@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import type { ProjectMeta } from "@/lib/types";
 
 interface ProjectCardProps {
@@ -11,7 +11,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project }: ProjectCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card) return;
 
@@ -24,14 +24,18 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     const rotateX = ((y - centerY) / centerY) * -4;
     const rotateY = ((x - centerX) / centerX) * 4;
 
-    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-  };
+    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px) scale3d(1.02, 1.02, 1.02)`;
 
-  const handleMouseLeave = () => {
+    // Feed cursor position to CSS variable for the glow
+    card.style.setProperty("--mouse-x", `${(x / rect.width) * 100}%`);
+    card.style.setProperty("--mouse-y", `${(y / rect.height) * 100}%`);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
     const card = cardRef.current;
     if (!card) return;
-    card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
-  };
+    card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0) scale3d(1, 1, 1)";
+  }, []);
 
   return (
     <Link href={`/projects/${project.slug}`}>
@@ -39,7 +43,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="group h-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 transition-all duration-300 ease-out hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent-glow)]"
+        className="card-glow group h-full rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 transition-all duration-300 ease-out"
       >
         {project.featured && (
           <span className="mb-3 inline-block rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
@@ -59,7 +63,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           {project.stack.slice(0, 5).map((tech) => (
             <span
               key={tech}
-              className="rounded-full bg-[var(--bg)] px-2.5 py-0.5 text-[11px] text-[var(--text-muted)]"
+              className="rounded-full bg-[var(--bg)] px-2.5 py-0.5 text-[11px] text-[var(--text-muted)] transition-colors group-hover:text-[var(--text-primary)]"
             >
               {tech}
             </span>

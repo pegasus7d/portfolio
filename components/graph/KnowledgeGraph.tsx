@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import ForceGraph2D from "react-force-graph-2d";
-import type { GraphData, GraphNode, NodeType } from "@/lib/graph";
+import type { GraphData, NodeType } from "@/lib/graph";
 
 // ── Visual config ──────────────────────────────────────────────
 
@@ -19,15 +19,20 @@ const NODE_COLORS: Record<NodeType, string> = {
   skill: "#6b7280",
 };
 
+const NODE_GLOW_COLORS: Record<NodeType, string> = {
+  project: "rgba(59, 130, 246, 0.5)",
+  blog: "rgba(167, 139, 250, 0.45)",
+  skill: "rgba(107, 114, 128, 0.3)",
+};
+
 const NODE_SIZES: Record<NodeType, number> = {
   project: 7,
   blog: 5,
   skill: 3.5,
 };
 
-const LINK_COLOR = "rgba(59, 130, 246, 0.08)";
-const LINK_HIGHLIGHT_COLOR = "rgba(59, 130, 246, 0.4)";
-const GLOW_ALPHA = 0.25;
+const LINK_COLOR = "rgba(59, 130, 246, 0.06)";
+const LINK_HIGHLIGHT_COLOR = "rgba(59, 130, 246, 0.35)";
 
 // ── Types for the force graph internal representation ──────────
 
@@ -66,8 +71,19 @@ export default function KnowledgeGraph({
   const router = useRouter();
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [focusedNode, setFocusedNode] = useState<string | null>(null);
+  const frameRef = useRef(0);
 
-  // Memoize the graph data object identity so ForceGraph doesn't re-init
+  // Tick counter for pulse animation
+  useEffect(() => {
+    let raf: number;
+    const tick = () => {
+      frameRef.current += 1;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   const graphData = useMemo(
     () => ({
       nodes: data.nodes.map((n) => ({ ...n })),
@@ -76,7 +92,6 @@ export default function KnowledgeGraph({
     [data]
   );
 
-  // Set of node IDs connected to the hovered/focused node
   const connectedIds = useMemo(() => {
     const active = focusedNode ?? hoveredNode;
     if (!active) return null;
@@ -109,7 +124,6 @@ export default function KnowledgeGraph({
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  // Cool down after initial layout
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
@@ -122,18 +136,25 @@ export default function KnowledgeGraph({
     (node: FGNode, ctx: CanvasRenderingContext2D) => {
       const size = NODE_SIZES[node.type] ?? 4;
       const color = NODE_COLORS[node.type] ?? "#6b7280";
+      const glowColor = NODE_GLOW_COLORS[node.type] ?? "rgba(107,114,128,0.3)";
       const isActive = !connectedIds || connectedIds.has(node.id);
-      const alpha = isActive ? 1 : 0.15;
+      const isHighlighted = hoveredNode === node.id || focusedNode === node.id;
+      const alpha = isActive ? 1 : 0.12;
 
       ctx.save();
       ctx.globalAlpha = alpha;
 
-      // Glow
-      if (isActive && (hoveredNode === node.id || focusedNode === node.id)) {
+      // Outer glow ring (always on for active, brighter for highlighted)
+      if (isActive) {
+        const pulse = isHighlighted
+          ? 0.4 + 0.2 * Math.sin(frameRef.current * 0.04)
+          : 0.15;
+        const glowSize = isHighlighted ? size + 8 : size + 4;
+
         ctx.beginPath();
-        ctx.arc(node.x!, node.y!, size + 4, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.globalAlpha = GLOW_ALPHA;
+        ctx.arc(node.x!, node.y!, glowSize, 0, Math.PI * 2);
+        ctx.fillStyle = glowColor;
+        ctx.globalAlpha = pulse * alpha;
         ctx.fill();
         ctx.globalAlpha = alpha;
       }
@@ -144,7 +165,15 @@ export default function KnowledgeGraph({
       ctx.fillStyle = color;
       ctx.fill();
 
-      // Label (only for project/blog or when hovered)
+      // Inner highlight dot for focused/hovered
+      if (isHighlighted) {
+        ctx.beginPath();
+        ctx.arc(node.x!, node.y!, size * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fill();
+      }
+
+      // Label
       if (
         node.type !== "skill" ||
         hoveredNode === node.id ||
@@ -153,14 +182,14 @@ export default function KnowledgeGraph({
         ctx.font = `${node.type === "skill" ? 3 : 3.5}px sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillStyle = isActive ? "#ededed" : "#555555";
+        ctx.fillStyle = isActive ? "#ededed" : "#444444";
 
         const maxChars = node.type === "skill" ? 12 : 20;
         const label =
           node.label.length > maxChars
             ? node.label.slice(0, maxChars) + "..."
             : node.label;
-        ctx.fillText(label, node.x!, node.y! + size + 2);
+        ctx.fillText(label, node.x!, node.y! + size + 2.5);
       }
 
       ctx.restore();
@@ -168,14 +197,31 @@ export default function KnowledgeGraph({
     [connectedIds, hoveredNode, focusedNode]
   );
 
-  const linkColor = useCallback(
-    (link: FGLink) => {
-      if (!connectedIds) return LINK_COLOR;
-      const src = nodeId(link.source);
-      const tgt = nodeId(link.target);
-      return connectedIds.has(src) && connectedIds.has(tgt)
-        ? LINK_HIGHLIGHT_COLOR
-        : "rgba(59, 130, 246, 0.03)";
+  const paintLink = useCallback(
+    (link: FGLink, ctx: CanvasRenderingContext2D) => {
+      const src = typeof link.source === "string" ? null : link.source;
+      const tgt = typeof link.target === "string" ? null : link.target;
+      if (!src?.x || !tgt?.x) return;
+
+      const srcId = nodeId(link.source);
+      const tgtId = nodeId(link.target);
+      const isHighlighted =
+        connectedIds && connectedIds.has(srcId) && connectedIds.has(tgtId);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(src.x, src.y!);
+      ctx.lineTo(tgt.x, tgt.y!);
+      ctx.strokeStyle = isHighlighted ? LINK_HIGHLIGHT_COLOR : (connectedIds ? "rgba(59,130,246,0.02)" : LINK_COLOR);
+      ctx.lineWidth = isHighlighted ? 1 : 0.4;
+
+      if (isHighlighted) {
+        ctx.shadowColor = "rgba(59,130,246,0.3)";
+        ctx.shadowBlur = 6;
+      }
+
+      ctx.stroke();
+      ctx.restore();
     },
     [connectedIds]
   );
@@ -188,11 +234,9 @@ export default function KnowledgeGraph({
   const onNodeClick = useCallback(
     (node: FGNode) => {
       if (focusedNode === node.id) {
-        // Second click on focused node → navigate
         if (node.url) router.push(node.url);
         setFocusedNode(null);
       } else {
-        // First click → focus and center
         setFocusedNode(node.id);
         fgRef.current?.centerAt?.(node.x, node.y, 600);
         fgRef.current?.zoom?.(2.5, 600);
@@ -217,13 +261,11 @@ export default function KnowledgeGraph({
       nodePointerAreaPaint={(node: FGNode, color: string, ctx: CanvasRenderingContext2D) => {
         const size = NODE_SIZES[node.type] ?? 4;
         ctx.beginPath();
-        ctx.arc(node.x!, node.y!, size + 4, 0, Math.PI * 2);
+        ctx.arc(node.x!, node.y!, size + 6, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
       }}
-      linkColor={linkColor}
-      linkWidth={0.5}
-      linkDirectionalParticles={0}
+      linkCanvasObject={paintLink}
       onNodeHover={onNodeHover}
       onNodeClick={onNodeClick}
       onBackgroundClick={onBackgroundClick}

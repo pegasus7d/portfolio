@@ -4,10 +4,12 @@ import {
   useRef,
   useState,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useCallback,
 } from "react";
 import dynamic from "next/dynamic";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { GraphData, NodeType } from "@/lib/graph";
 
@@ -30,6 +32,7 @@ interface GraphSectionProps {
 }
 
 export default function GraphSection({ data }: GraphSectionProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const reduced = useReducedMotion();
@@ -48,6 +51,38 @@ export default function GraphSection({ data }: GraphSectionProps) {
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [measure]);
+
+  useLayoutEffect(() => {
+    if (reduced || !sectionRef.current) return;
+
+    const heading = sectionRef.current.querySelector("[data-graph-heading]");
+    const legend = sectionRef.current.querySelector("[data-graph-legend]");
+    const canvas = sectionRef.current.querySelector("[data-graph-canvas]");
+
+    const targets = [heading, legend, canvas].filter(Boolean);
+    gsap.set(targets, { opacity: 0, y: 40, filter: "blur(4px)" });
+
+    const tween = gsap.to(targets, {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      duration: 0.8,
+      stagger: 0.15,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: sectionRef.current,
+        start: "top 80%",
+        once: true,
+      },
+    });
+
+    return () => {
+      tween.kill();
+      ScrollTrigger.getAll()
+        .filter((st) => st.trigger === sectionRef.current)
+        .forEach((st) => st.kill());
+    };
+  }, [reduced]);
 
   const stableData = useMemo(() => data, [data]);
 
@@ -68,9 +103,9 @@ export default function GraphSection({ data }: GraphSectionProps) {
   }
 
   return (
-    <section id="graph" className="py-20 px-6">
+    <section ref={sectionRef} id="graph" className="py-20 px-6">
       <div className="mx-auto max-w-5xl">
-        <div className="text-center mb-8">
+        <div data-graph-heading className="text-center mb-8">
           <h2 className="text-3xl font-bold tracking-tight text-white mb-3">
             Knowledge Graph
           </h2>
@@ -83,7 +118,7 @@ export default function GraphSection({ data }: GraphSectionProps) {
         </div>
 
         {/* Legend */}
-        <div className="flex justify-center gap-5 mb-6">
+        <div data-graph-legend className="flex justify-center gap-5 mb-6">
           {LEGEND.map((item) => (
             <div key={item.type} className="flex items-center gap-1.5 text-xs text-muted">
               <span
@@ -98,7 +133,8 @@ export default function GraphSection({ data }: GraphSectionProps) {
         {/* Graph canvas */}
         <div
           ref={containerRef}
-          className="relative w-full rounded-xl border border-white/5 bg-black/30 overflow-hidden"
+          data-graph-canvas
+          className="relative w-full rounded-xl border border-white/5 bg-black/20 overflow-hidden"
           style={{ minHeight: 320 }}
         >
           {dimensions.width > 0 && (

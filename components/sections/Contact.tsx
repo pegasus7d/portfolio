@@ -98,7 +98,7 @@ export default function Contact() {
               data-contact-link
               target={link.href.startsWith("mailto") ? undefined : "_blank"}
               rel={link.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
-              className="group flex items-center gap-2 text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
+              className="group flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-[var(--text-muted)] transition-all duration-300 hover:text-[var(--accent)] hover:bg-[var(--surface)] hover:shadow-[0_0_20px_rgba(59,130,246,0.08)]"
             >
               <span className="font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)]">
                 {link.label}

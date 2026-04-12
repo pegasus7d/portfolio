@@ -109,7 +109,7 @@ export default function Skills() {
                 <span
                   key={skill}
                   data-skill-chip
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text-primary)]"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--text-muted)] transition-all duration-300 hover:border-[var(--accent)] hover:text-[var(--text-primary)] hover:shadow-[0_0_12px_rgba(59,130,246,0.15)]"
                 >
                   {skill}
                 </span>
