@@ -17,8 +17,8 @@ import {
   type JourneyDetail,
 } from "@/lib/journey";
 
-/** Place your PDF at `public/assets/resume.pdf` — it is served at /assets/resume.pdf and downloaded on click. */
-const RESUME_HREF = "/assets/resume.pdf";
+/** Place your PDF at `public/assets/resume-backend.pdf` — it is served at /assets/resume-backend.pdf and downloaded on click. */
+const RESUME_HREF = "/assets/resume-backend.pdf";
 const RESUME_DOWNLOAD_NAME = "Debayan_Biswas_Resume.pdf";
 
 const NAV_LINKS = [
